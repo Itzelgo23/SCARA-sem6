@@ -43,6 +43,9 @@ uint8_t AS5600::MagnetDetection()
     case NO_Magnet:
         printf("No magnet detected: %d\n", magnet_status);
         return NO_Magnet;
+
+    default:
+        return NO_Magnet;
     }
 }
 
@@ -63,7 +66,7 @@ void AS5600::quadrantAngle()
     -----
     3 | 2
     */
-    //quadrant detection can be changed from every 90 to every 45 degrees
+    // quadrant detection can be changed from every 90 to every 45 degrees
     if (degAngle >= 0 && degAngle < 90)
         quadrant = 1;
     else if (degAngle >= 90 && degAngle < 180)
@@ -73,23 +76,22 @@ void AS5600::quadrantAngle()
     else
         quadrant = 4;
 
-    if(quadrant != prev_Quadrant)
+    if (quadrant != prev_Quadrant)
     {
-        if(quadrant == 1 && prev_Quadrant == 4)
+        if (quadrant == 1 && prev_Quadrant == 4)
             number_of_turns++;
-        else if(quadrant == 4 && prev_Quadrant == 1)
+        else if (quadrant == 4 && prev_Quadrant == 1)
             number_of_turns--;
 
         prev_Quadrant = quadrant;
     }
-    
 }
 
 uint16_t AS5600::readRawAngle()
 {
     read16(RAW_ANGLE, rawAngle);
     degAngle = (rawAngle * 360.0) / resolution;
-    
+
     correctAngle();
     quadrantAngle();
 
@@ -124,4 +126,3 @@ uint8_t AS5600::read8(uint8_t reg)
     _i2c.read(&cmd, 1, buffer, 1);
     return buffer[0];
 }
-
