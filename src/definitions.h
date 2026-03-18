@@ -5,6 +5,8 @@
 #include <esp_task_wdt.h>
 #include <AS5600.h>
 #include <SimpleTimer.h>
+#include <SimpleI2C.h>
+
 
 enum MagStatus
 {
@@ -19,7 +21,7 @@ uint8_t SCL_PIN = 22;
 
 #pragma region Library defines
 SimpleI2C i2c;
-AS5600 magEncoder(i2c);
+AS5600 magEncoder;
 SimpleTimer timer;
 #pragma endregion
 

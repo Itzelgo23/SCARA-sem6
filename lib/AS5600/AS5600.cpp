@@ -1,10 +1,19 @@
 #include <AS5600.h>
 
-AS5600::AS5600(SimpleI2C &i2c) : _i2c(i2c) {}
-
-void AS5600::begin()
+AS5600::AS5600() : _I2C_ESP(nullptr), ADDRESS(0)
 {
-    _i2c.setup(ADDRESS);
+}
+
+AS5600::~AS5600()
+{
+}
+
+void AS5600::setup(SimpleI2C &i2c, uint8_t addr)
+{
+    _I2C_ESP = &i2c;
+    ADDRESS = addr;
+
+    _I2C_ESP->setup_device(ADDRESS);
 }
 
 uint8_t AS5600::readMagnet()
@@ -17,17 +26,30 @@ uint8_t AS5600::MagnetDetection()
 {
 
     magnet_status = readMagnet();
+    vTaskDelay(pdMS_TO_TICKS(100)); // Delay to prevent excessive I2C reads, adjust as needed
     if (magnet_status & 0x20)
+    {
+        printf("Magnet detected: %d\n", magnet_status);
         status = MD;
+    }
 
     else if (magnet_status & 0x10)
+    {
+        printf("Magnet too strong - increase distance or use weaker magnet: %d\n", magnet_status);
         status = MH;
+    }
 
     else if (magnet_status & 0x08)
+    {
+        printf("Magnet too weak - decrease distance or use stronger magnet: %d\n", magnet_status);
         status = ML;
+    }
 
     else
+    {
+        printf("No magnet detected: %d\n", magnet_status);
         status = NO_Magnet;
+    }
 
     switch (status)
     {
@@ -106,23 +128,26 @@ float AS5600::getTotalAngle()
 
 void AS5600::write8(uint8_t reg, uint8_t value)
 {
-    uint8_t cmd = COMMAND_BIT | reg;
-    uint8_t data[] = {cmd, value};
-    _i2c.write(data, 2);
+    uint8_t data[] = {reg, value};
+    _I2C_ESP->write(ADDRESS, data, 2);
 }
 
 void AS5600::read16(uint8_t reg, uint16_t &value)
 {
-    uint8_t cmd = COMMAND_BIT | reg;
     uint8_t buffer[2];
-    _i2c.read(&cmd, 1, buffer, 2);
-    value = buffer[1] << 8 | buffer[0];
+    _I2C_ESP->master_read_write(ADDRESS, &reg, 1, buffer, 2);
+    value = (buffer[0] << 8) | buffer[1];
 }
 
 uint8_t AS5600::read8(uint8_t reg)
 {
-    uint8_t cmd = COMMAND_BIT | reg;
-    uint8_t buffer[1];
-    _i2c.read(&cmd, 1, buffer, 1);
-    return buffer[0];
+    uint8_t value = 0;
+
+    // 1. Escribes el registro que quieres leer
+    _I2C_ESP->write(ADDRESS, &reg, 1);
+
+    // 2. Lees el valor
+    _I2C_ESP->read(ADDRESS, &value, 1);
+
+    return value;
 }

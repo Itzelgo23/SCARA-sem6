@@ -11,6 +11,7 @@ enum MagnetStatus
     NO_Magnet = 3,
 };
 
+
 enum Address
 {
     ZMCO = 0x00,
@@ -26,19 +27,18 @@ enum Address
 class AS5600
 {
 public:
-    AS5600(SimpleI2C &i2c);
-    void begin();
+    AS5600();
+    ~AS5600();
+    void setup(SimpleI2C &i2c, uint8_t addr = 0x36);
     uint8_t readMagnet();
     uint8_t MagnetDetection();
     uint16_t readRawAngle();
     float getTotalAngle();
 
-    //get velocity()
-    //getturns()
+    // get velocity()
+    // getturns()
 
 private:
-    SimpleI2C &_i2c;
-    static constexpr uint8_t ADDRESS = 0x36;
     static constexpr uint8_t COMMAND_BIT = 0x80;
 
     void write8(uint8_t reg, uint8_t value);
@@ -50,6 +50,8 @@ private:
 
     uint8_t magnet_status;
     MagnetStatus status;
+    SimpleI2C *_I2C_ESP;
+    uint8_t ADDRESS;
 
 #pragma region Angle reading and calculation variables
     uint16_t rawAngle;
@@ -66,7 +68,6 @@ private:
     int prev_Quadrant; // 1,2,3,4
     float number_of_turns;
 #pragma endregion
-
 };
 
 #endif // __AS5600_H__

@@ -10,11 +10,17 @@ extern "C" void app_main()
 {
     esp_task_wdt_deinit();
 
-    magEncoder.begin();
+    
+    i2c.setup_master(21, 22, 100000, I2C_NUM_1);
+    magEncoder.setup(i2c);
     timer.setup(interrupt_AS5600, "AS5600 Timer");
     timer.startPeriodic(dt_us);
+    
     while (1)
     {
+        uint8_t magnetRead = magEncoder.readMagnet();
+        printf("Magnet Status: %d\n", magnetRead);
+        vTaskDelay(pdMS_TO_TICKS(500)); // Delay to prevent excessive I2C reads, adjust as needed
         if (timer.interruptAvailable())
         {
             if (magEncoder.MagnetDetection() != MD)
