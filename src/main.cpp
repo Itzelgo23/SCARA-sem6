@@ -18,8 +18,11 @@ extern "C" void app_main()
     Base_Motor.setup(B_pins, B_ch, &Base_config);
     Shoulder_Motor.setup(S_pins, S_ch, &Shoulder_config);
     Elbow_Motor.setup(E_pins, E_pins, &DC_config);
+    Wrist_Motor.setup(W_pins, W_ch, &DC_config);
+    Air_pump.setup(A_pins, A_ch, &Extra_config);
 
-    quad_E_Elbow.setup(quad_E_pins, degrees_per_edge);
+    quad_Elbow.setup(quad_E_pins, DpE_Elbow);
+    quad_Wrist.setup(quad_W_pins, DpE_Wrist);
 
     EoR.setup(EoR_pin, GPI, GPIO_PULLDOWN_ONLY);
 
@@ -48,9 +51,13 @@ extern "C" void app_main()
                 Elbow_Motor.setSpeed(100);
                 break;
             case Wrist: // DC2
-                // UART
+                Wrist_Motor.setSpeed(100);
                 break;
-
+            case Gripper:
+                Air_pump.setSpeed(100);
+                break;
+            case Error:
+                break;
             default:
                 break;
             }
