@@ -10,6 +10,7 @@
 #include <QuadratureEncoder.h>
 #include <PID.h>
 #include <HBridge.h>
+#include <SimpleUART.h>
 
 // UART2 RX 16 y TX 17
 // Wrist and Gripper in second (SLAVE) ESP32
@@ -28,7 +29,7 @@ enum MagStatus
     Detection = 0,
     Error = 1
 };
-MagStatus status;
+MagStatus status = Detection;
 
 enum MotorTypes
 {
@@ -37,10 +38,9 @@ enum MotorTypes
     Shoulder = 2, // Stepper2
     Elbow = 3,    // DC1
     Wrist = 4,    // DC2
-    Gripper = 5,
-    Error = 6
+    Gripper = 5
 };
-MotorTypes motor_case;
+MotorTypes motor_case = Base;
 
 #pragma region TIMERS defines
 TimerConfig Base_config = {
@@ -78,11 +78,9 @@ SimpleTimer timer;
 SimpleI2C i2c;
 
 // Control
-AS5600 magE_Base;
-AS5600 magE_Shoulder;
-QuadratureEncoder quad_Elbow;
-QuadratureEncoder quad_Wrist;
-PID pid;
+AS5600 magE[2];
+QuadratureEncoder quadE[2];
+PID pid[4];
 
 // Motors
 Stepper Base_Motor;
@@ -94,8 +92,13 @@ HBridge Air_pump;
 // End of race sensor
 SimpleGPIO EoR;
 
+SimpleUART uart(115200);
+
 #pragma endregion
 
+#pragma region UART varaibles
+char buffer_in[32];
+#pragma endregion
 //--------------------------
 // Pin and channel definitions
 //--------------------------
@@ -137,34 +140,25 @@ const float DpE_Wrist = 0.36437f;
 
 #pragma region Stepper variables
 const float step_angle = 1.8f;
+int f_range[2] = {20, 100};
 #pragma endregion
 
 #pragma region AS5600 defines
 uint8_t mag_status = 0;
 #pragma endregion
 
-#pragma region PID variables
-int B_measurement = 0;
-int S_measurement = 0;
-int E_measurement = 0;
-int W_measurement = 0;
+#pragma region PID var,iables
 
-int B_error = 0;
-int S_error = 0;
-int E_error = 0;
-int W_error = 0;
+float error[4] = {0, 0, 0, 0}; // base,Shoulder,Elbow,Wrist
 
-int B_prev_error = 0;
-int S_prev_error = 0;
-int E_prev_error = 0;
-int W_prev_error = 0;
+int prev_error[4] = {0, 0, 0, 0};
 
-int B_control = 0;
-int S_control = 0;
-int E_control = 0;
-int W_control = 0;
+float control[4] = {0, 0, 0, 0};
 
-float PID_gains[3] = {1.0, 0.2, 0.0};
+int ref = 0;
+
+float PID_gains[3] = {1.0, 1.0, 1.0};
+uint64_t PID_us     = 10000;
 #pragma endregion
 
 //--------------------------

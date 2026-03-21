@@ -1,4 +1,6 @@
 #include "definitions.h"
+#include "PIDmotors.h"
+#include "MagnetDetection.h"
 
 static void IRAM_ATTR
 interrupt_AS5600(void *arg)
@@ -11,20 +13,27 @@ extern "C" void app_main()
     esp_task_wdt_deinit();
 
     i2c.setup_master(21, 22, 100000, I2C_NUM_1);
-    magE_Base.setup(i2c);
+    magE[0].setup(i2c);
+    magE[1].setup(i2c);
+    // magE[1].setup(i2c);
     timer.setup(interrupt_AS5600, "AS5600 Timer");
     timer.startPeriodic(dt_us);
 
-    Base_Motor.setup(B_pins, B_ch, &Base_config);
-    Shoulder_Motor.setup(S_pins, S_ch, &Shoulder_config);
+    Base_Motor.setup(B_pins, B_ch, &Base_config, f_range);
+    Shoulder_Motor.setup(S_pins, S_ch, &Shoulder_config, f_range);
     Elbow_Motor.setup(E_pins, E_pins, &DC_config);
     Wrist_Motor.setup(W_pins, W_ch, &DC_config);
     Air_pump.setup(A_pins, A_ch, &Extra_config);
 
-    quad_Elbow.setup(quad_E_pins, DpE_Elbow);
-    quad_Wrist.setup(quad_W_pins, DpE_Wrist);
+    quadE[0].setup(quad_E_pins, DpE_Elbow);
+    quadE[1].setup(quad_W_pins, DpE_Wrist);
 
     EoR.setup(EoR_pin, GPI, GPIO_PULLDOWN_ONLY);
+
+    pid[0].setup(PID_gains, PID_us / 1000000.0f);
+    pid[1].setup(PID_gains, PID_us / 1000000.0f);
+    pid[2].setup(PID_gains, PID_us / 1000000.0f);
+    pid[3].setup(PID_gains, PID_us / 1000000.0f);
 
     prev = esp_timer_get_time();
     while (1)
@@ -33,56 +42,80 @@ extern "C" void app_main()
         if (current - prev >= dt_us)
         {
             prev = current;
-            switch (motor_case)
+            switch (status)
             {
-            case Initial:
-                uint8_t magnetRead = magE_Base.readMagnet();
-                printf("Magnet Status: %d\n", magnetRead);
-                vTaskDelay(pdMS_TO_TICKS(500));
+            case Detection:
+                switch (motor_case)
+                {
+                case Initial:
+                {
+                    Base_Motor.setSpeed(0);
+                    Shoulder_Motor.setSpeed(0);
+                    Elbow_Motor.setSpeed(0);
+                    Wrist_Motor.setSpeed(0);
+                    uint8_t magnetRead = magE[1].readMagnet();
+                    printf("Magnet Status: %d\n", magnetRead);
+                    vTaskDelay(pdMS_TO_TICKS(500));
+                    break;
+                }
+                case Base: // Stepper1
+                {
+                    printf("moving base motor, ref: %d\n", ref);
+                    PIDmotors(ref, Base, control[0], error[0]);
+                    Base_Motor.begin(control[0], error[0]);
+                    //Base_Motor.setSpeed(100);
+                    break;
+                }
+                case Shoulder: // Stepper2
+                {
+                    PIDmotors(ref, Shoulder, control[1], error[1]);
+                    Shoulder_Motor.begin(control[1], error[1]);
+                    break;
+                }
+                case Elbow: // DC1
+                {
+                    PIDmotors(ref, Elbow, control[2], error[2]);
+                    Elbow_Motor.setSpeed(control[2]);
+                    break;
+                }
+                case Wrist: // DC2
+                {
+                    PIDmotors(ref, Wrist, control[3], error[3]);
+                    Wrist_Motor.setSpeed(control[3]);
+                    break;
+                }
+                case Gripper:
+                {
+                    Air_pump.setSpeed(100);
+                    break;
+                }
 
+                default:
+                    break;
+                }
                 break;
-            case Base: // Stepper1
-                Base_Motor.setSpeed(100);
-                break;
-            case Shoulder: // Stepper2
-                Shoulder_Motor.setSpeed(100);
-                break;
-            case Elbow: // DC1
-                Elbow_Motor.setSpeed(100);
-                break;
-            case Wrist: // DC2
-                Wrist_Motor.setSpeed(100);
-                break;
-            case Gripper:
-                Air_pump.setSpeed(100);
-                break;
+
             case Error:
+                Base_Motor.setSpeed(0);
+                Shoulder_Motor.setSpeed(0);
+                Elbow_Motor.setSpeed(0);
+                Wrist_Motor.setSpeed(0);
                 break;
-            default:
-                break;
+            }
+            int len = uart.available();
+            if (len)
+            {
+                int motor_tmp;
+                uart.read(buffer_in, len);
+                printf("RX RAW: [%s]\n", buffer_in);
+                sscanf(buffer_in, "%d,%d", &motor_tmp, &ref);
+                motor_case = (MotorTypes)motor_tmp;
             }
         }
 
         if (timer.interruptAvailable())
         {
-            if (magE_Base.MagnetDetection() != MD)
-                status = Error;
-            else
-                status = Detection;
-
-            switch (status)
-            {
-            case Detection:
-                magE_Base.readRawAngle();
-                printf("Angle: %.2f\n", magE_Base.getTotalAngle());
-                break;
-
-            case Error:
-                magE_Base.MagnetDetection();
-                break;
-            default:
-                break;
-            }
+            status = DetectMagnet(motor_case,motor_case);
         }
     }
 }

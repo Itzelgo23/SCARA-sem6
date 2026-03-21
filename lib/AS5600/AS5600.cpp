@@ -29,20 +29,20 @@ uint8_t AS5600::MagnetDetection()
     vTaskDelay(pdMS_TO_TICKS(100)); // Delay to prevent excessive I2C reads, adjust as needed
     if (magnet_status & 0x20)
     {
-        printf("Magnet detected: %d\n", magnet_status);
+        //printf("Magnet detected: %d\n", magnet_status);
         status = MD;
     }
 
     else if (magnet_status & 0x10)
     {
-        printf("Magnet too strong - increase distance or use weaker magnet: %d\n", magnet_status);
-        status = MH;
+        printf("Magnet too weak - decrease distance or use stronger magnet: %d\n", magnet_status);
+        status = ML;
     }
 
     else if (magnet_status & 0x08)
     {
-        printf("Magnet too weak - decrease distance or use stronger magnet: %d\n", magnet_status);
-        status = ML;
+        printf("Magnet too strong - increase distance or use weaker magnet: %d\n", magnet_status);
+        status = MH;
     }
 
     else
