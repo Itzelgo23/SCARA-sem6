@@ -21,7 +21,7 @@ extern "C" void app_main()
 
     Base_Motor.setup(B_pins, B_ch, &Base_config, f_range);
     Shoulder_Motor.setup(S_pins, S_ch, &Shoulder_config, f_range);
-    Elbow_Motor.setup(E_pins, E_pins, &DC_config);
+    Elbow_Motor.setup(E_pins, E_ch, &DC_config);
     Wrist_Motor.setup(W_pins, W_ch, &DC_config);
     Air_pump.setup(A_pins, A_ch, &Extra_config);
 
@@ -61,26 +61,26 @@ extern "C" void app_main()
                 case Base: // Stepper1
                 {
                     printf("moving base motor, ref: %d\n", ref);
-                    PIDmotors(ref, Base, control[0], error[0]);
+                    PIDmotors(ref, Base, control[0], error[0],angle_S[0],speed_S[0]);
                     Base_Motor.begin(control[0], error[0]);
-                    //Base_Motor.setSpeed(100);
+                    printf("Angle: %.2f | Speed: %.2f | Current time: %d\n",angle_S[0],speed_S[0],current);  
                     break;
                 }
                 case Shoulder: // Stepper2
                 {
-                    PIDmotors(ref, Shoulder, control[1], error[1]);
+                    PIDmotors(ref, Shoulder, control[1], error[1],angle_S[1],speed_S[1]);
                     Shoulder_Motor.begin(control[1], error[1]);
                     break;
                 }
                 case Elbow: // DC1
                 {
-                    PIDmotors(ref, Elbow, control[2], error[2]);
+                    PIDmotors(ref, Elbow, control[2], error[2],angle_DC[0],speed_DC[0]);
                     Elbow_Motor.setSpeed(control[2]);
                     break;
                 }
                 case Wrist: // DC2
                 {
-                    PIDmotors(ref, Wrist, control[3], error[3]);
+                    PIDmotors(ref, Wrist, control[3], error[3],angle_DC[1],speed_DC[1]);
                     Wrist_Motor.setSpeed(control[3]);
                     break;
                 }

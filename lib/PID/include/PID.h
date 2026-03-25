@@ -7,7 +7,7 @@ public:
     PID();
     void setup(float gains[3], float dt);
     float calculate(float error);
-
+    void reset();
 private:
 float _Kp,_Ki,_Kd,_dt;
 float _prev_error = 0;

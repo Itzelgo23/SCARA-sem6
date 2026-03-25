@@ -21,3 +21,8 @@ float PID::calculate(float error)
     _prev_error = error;
     return u;
 }
+
+void PID::reset()
+{
+    _integral = 0;
+}

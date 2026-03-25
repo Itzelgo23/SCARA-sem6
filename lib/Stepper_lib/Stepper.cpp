@@ -35,7 +35,7 @@ void Stepper::setSpeed(float speed)
 int Stepper::begin(float control, float error)
 {
 
-    if (abs(error) < 1)
+    if (abs(error) < 2)
     {
         _freq = 0;
         //printf("Target reached! Angle: %d | Error: %.2f | Control: %f\n", _angle, error, control);

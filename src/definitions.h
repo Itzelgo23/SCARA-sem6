@@ -45,8 +45,8 @@ MotorTypes motor_case = Base;
 #pragma region TIMERS defines
 TimerConfig Base_config = {
     .timer = LEDC_TIMER_0,
-    .frequency = 100,
-    .bit_resolution = LEDC_TIMER_14_BIT,
+    .frequency = 300,
+    .bit_resolution = LEDC_TIMER_10_BIT,
     .mode = LEDC_LOW_SPEED_MODE};
 
 TimerConfig Shoulder_config = {
@@ -136,28 +136,32 @@ uint8_t A_ch[2] = {6, 7};
 #pragma region DC variables
 const float DpE_Elbow = 0.36437f;
 const float DpE_Wrist = 0.36437f;
+float speed_DC[2] = {0.0,0.0};
+float angle_DC[2] = {0.0,0.0};
 #pragma endregion
 
 #pragma region Stepper variables
 const float step_angle = 1.8f;
 int f_range[2] = {20, 100};
+float speed_S[2] = {0.0,0.0};
+float angle_S[2] = {0.0,0.0};
 #pragma endregion
 
 #pragma region AS5600 defines
 uint8_t mag_status = 0;
 #pragma endregion
 
-#pragma region PID var,iables
+#pragma region PID variables
 
-float error[4] = {0, 0, 0, 0}; // base,Shoulder,Elbow,Wrist
+float error[4] = {0.0, 0.0, 0.0, 0.0}; // base,Shoulder,Elbow,Wrist
 
-int prev_error[4] = {0, 0, 0, 0};
+float prev_error[4] = {0.0, 0.0, 0.0, 0.0};
 
-float control[4] = {0, 0, 0, 0};
+float control[4];
 
 int ref = 0;
 
-float PID_gains[3] = {1.0, 1.0, 1.0};
+float PID_gains[3] = {1.0, 0.2, 0.0};
 uint64_t PID_us     = 10000;
 #pragma endregion
 
@@ -166,7 +170,7 @@ uint64_t PID_us     = 10000;
 //--------------------------
 #pragma region Time Polling defines
 uint64_t prev = 0, current = 0;
-uint64_t dt_us = 10000; // 10ms
+uint64_t dt_us = 1000; // 1ms
 #pragma endregion
 
 #endif // __DEFINITIONS_H__

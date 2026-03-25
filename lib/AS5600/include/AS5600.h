@@ -1,7 +1,9 @@
 #ifndef __AS5600_H__
 #define __AS5600_H__
 
-#include "SimpleI2C.h"
+#include <SimpleI2C.h>
+#include <esp_timer.h>
+#include <math.h>
 
 enum MagnetStatus
 {
@@ -34,6 +36,7 @@ public:
     uint8_t MagnetDetection();
     uint16_t readRawAngle();
     float getTotalAngle();
+    float getSpeed();
 
     // get velocity()
     // getturns()
@@ -53,6 +56,11 @@ private:
     SimpleI2C *_I2C_ESP;
     uint8_t ADDRESS;
 
+    uint64_t _current, _prev = 0;
+    uint64_t _dt_us = 0;
+    uint64_t _timeout_us = 70000;
+    float _speed = 0;
+
 #pragma region Angle reading and calculation variables
     uint16_t rawAngle;
     float degAngle;
@@ -60,7 +68,9 @@ private:
     float corrected_Angle;
     float start_Angle;
     float totalAngle;      // absolute displacement
-    float prev_totalAngle; // display
+    float current_Angle;
+    float prev_Angle = 0;
+    float delta_Angle;
 #pragma endregion
 
 #pragma region Quadrant detection variables

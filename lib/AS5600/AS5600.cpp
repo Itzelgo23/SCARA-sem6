@@ -29,7 +29,7 @@ uint8_t AS5600::MagnetDetection()
     vTaskDelay(pdMS_TO_TICKS(100)); // Delay to prevent excessive I2C reads, adjust as needed
     if (magnet_status & 0x20)
     {
-        //printf("Magnet detected: %d\n", magnet_status);
+        // printf("Magnet detected: %d\n", magnet_status);
         status = MD;
     }
 
@@ -123,7 +123,36 @@ uint16_t AS5600::readRawAngle()
 float AS5600::getTotalAngle()
 {
     totalAngle = corrected_Angle + (number_of_turns * 360);
+    current_Angle = totalAngle;
     return totalAngle;
+}
+
+float AS5600::getSpeed()
+{
+    _current = esp_timer_get_time();
+    if (_prev == 0)
+    {
+        _prev = _current;
+        prev_Angle = current_Angle;
+        return 0.0f;
+    }
+
+    delta_Angle = current_Angle - prev_Angle;
+    _dt_us = _current - _prev;
+
+    if (fabs(delta_Angle) > 0.0001 && _dt_us > 0)
+    {
+        _speed = (delta_Angle * 1000000.0f) / _dt_us;
+    }
+    else
+    {
+        _speed = 0.0f;
+    }
+
+    prev_Angle = current_Angle;
+    _prev = _current;
+
+    return _speed;
 }
 
 void AS5600::write8(uint8_t reg, uint8_t value)
