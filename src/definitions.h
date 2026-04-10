@@ -11,14 +11,21 @@
 #include <PID.h>
 #include <HBridge.h>
 #include <SimpleUART.h>
-
+#include <ServoStepper.h>
 // UART2 RX 16 y TX 17
 // Wrist and Gripper in second (SLAVE) ESP32
 
-// Pins used: 13,16,17,18,19,21,22,25,26,27,32,33,35
-// Pins left: 4,23
+//2 steppers (4), 2 DC (4), 1 mag encoder (SDA, SCL), 2 quad encoder
+//1 limit switch, 1 UART (16,17)
 
-// Pin 14 outputs PWM signal at boot, strapping pin
+// Pins used: 4,13,16,17,18,19,21,22,23,25,26,27,32,33,34,35,36,39
+
+
+// Pin 2 connected to on-board LED, must be floating or LOW to enter flashing mode
+// Pin 5,15 outputs PWM signal at boot, strapping pin
+// Pin 14 outputs PWM signal at boot
+
+//Pin 12 boot fails if pulled high, strapping pin
 // para gripper
 
 // puedo usar strapping pins, o outputs PWM signal at boot para pines dir del stepper
@@ -41,6 +48,26 @@ enum MotorTypes
     Gripper = 5
 };
 MotorTypes motor_case = Base;
+
+enum PS4state {
+    xUp = 0,
+    xDown = 1,
+    xRight = 2,
+    xLeft = 3,
+
+    yUp = 4,
+    yDown = 5,
+    yRight = 6,
+    yLeft = 7,
+
+    d_up = 8,
+    d_down = 9,
+    d_right = 10,
+    d_left = 11,
+
+    a = 12,
+};
+PS4state PS4_state = xUp;
 
 #pragma region TIMERS defines
 TimerConfig Base_config = {
@@ -83,10 +110,10 @@ QuadratureEncoder quadE[2];
 PID pid[4];
 
 // Motors
-Stepper Base_Motor;
-Stepper Shoulder_Motor;
-HBridge Elbow_Motor;
-HBridge Wrist_Motor;
+ServoStepper Base_Motor; //up and down
+Stepper Shoulder_Motor; //left and right
+HBridge Elbow_Motor; //left and right
+HBridge Wrist_Motor; //left and right
 HBridge Air_pump;
 
 // End of race sensor
@@ -106,18 +133,18 @@ char buffer_in[32];
 // Stepper pins
 uint8_t B_pins[2] = {32, 33}; // dir, step
 // magEncoder SDA 21 SCL 22
+//UART 16 & 17
 
 uint8_t S_pins[2] = {25, 26}; // dir, step
-// magEncoder SDA ... SCL ...
 
 // DC pins
-uint8_t E_pins[2] = {27, 13};
-uint8_t quad_E_pins[2] = {36, 39};
+uint8_t E_pins[2] = {27, 13}; //black,blue
+uint8_t quad_E_pins[2] = {36, 39}; //VP, VN //yellow,green
 
-uint8_t W_pins[2] = {18, 19};
-uint8_t quad_W_pins[2] = {34, 14};
+uint8_t W_pins[2] = {18, 19}; //black,blue
+uint8_t quad_W_pins[2] = {34, 23}; //yellow, green
 
-uint8_t A_pins[2] = {4, 23};
+uint8_t G_pins = 4;
 // End of race
 uint8_t EoR_pin = 35;
 #pragma endregion
@@ -127,7 +154,7 @@ uint8_t B_ch = 0;
 uint8_t S_ch = 1;
 uint8_t E_ch[2] = {2, 3};
 uint8_t W_ch[2] = {4, 5};
-uint8_t A_ch[2] = {6, 7};
+uint8_t G_ch[2] = {6, 7};
 #pragma endregion
 
 //--------------------------
@@ -142,7 +169,7 @@ float angle_DC[2] = {0.0,0.0};
 
 #pragma region Stepper variables
 const float step_angle = 1.8f;
-int f_range[2] = {20, 100};
+float max_freq = 750.0f;
 float speed_S[2] = {0.0,0.0};
 float angle_S[2] = {0.0,0.0};
 #pragma endregion
@@ -162,6 +189,7 @@ float control[4];
 int ref = 0;
 
 float PID_gains[3] = {1.0, 0.2, 0.0};
+float PID_DC_gains[3] = {1.0f, 0.0f, 0.0};
 uint64_t PID_us     = 10000;
 #pragma endregion
 
@@ -170,7 +198,7 @@ uint64_t PID_us     = 10000;
 //--------------------------
 #pragma region Time Polling defines
 uint64_t prev = 0, current = 0;
-uint64_t dt_us = 1000; // 1ms
+uint64_t dt_us = 10000; // 1ms
 #pragma endregion
 
 #endif // __DEFINITIONS_H__
