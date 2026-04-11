@@ -14,7 +14,7 @@ extern "C" void app_main()
 
     prev = esp_timer_get_time();
     while (1)
-    {
+    {   
         current = esp_timer_get_time();
         if (current - prev >= dt_us)
         {

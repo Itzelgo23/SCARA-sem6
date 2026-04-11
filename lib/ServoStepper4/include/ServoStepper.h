@@ -27,7 +27,6 @@ public:
     float set(float control, float error);
     void setSpeed(float freq);
     float getAngle();
-    void counter(int8_t dir);
     void setHome(int homefreq);
     void isHome();
 };
