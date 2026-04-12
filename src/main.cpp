@@ -1,5 +1,6 @@
 #include "definitions.h"
 #include "PIDmotors.h"
+#include "MoveHome.h"
 #include "MagnetDetection.h"
 
 static void IRAM_ATTR
@@ -28,7 +29,7 @@ extern "C" void app_main()
     quadE[0].setup(quad_E_pins, DpE_Elbow);
     quadE[1].setup(quad_W_pins, DpE_Wrist);
 
-    EoR.setup(EoR_pin, GPI, GPIO_PULLDOWN_ONLY);
+    LimitSwitch.setup(LS_pin, GPI, GPIO_PULLDOWN_ONLY);
 
     pid[0].setup(PID_gains, PID_us / 1000000.0f);
     pid[1].setup(PID_gains, PID_us / 1000000.0f);
@@ -60,33 +61,43 @@ extern "C" void app_main()
                 }
                 case Base: // Stepper1
                 {
+                    ref[0] = set_ref;
                     printf("moving base motor, ref: %d\n", ref);
-                    PIDmotors(ref, Base, control[0], error[0],angle_S[0],speed_S[0]);
+                    PIDmotors(ref[0], Base, control[0], error[0],angle_S[0],speed_S[0]);
                     Base_Motor.set(control[0], error[0]);
                     //printf("Angle: %.2f | Speed: %.2f | Current time: %d\n",angle_S[0],speed_S[0],current);  
                     break;
                 }
                 case Shoulder: // Stepper2
                 {
-                    PIDmotors(ref, Shoulder, control[1], error[1],angle_S[1],speed_S[1]);
+                    ref[1] = set_ref;
+                    PIDmotors(ref[1], Shoulder, control[1], error[1],angle_S[1],speed_S[1]);
                     Shoulder_Motor.set(control[1], error[1]);
                     break;
                 }
                 case Elbow: // DC1
                 {
-                    PIDmotors(ref, Elbow, control[2], error[2],angle_DC[0],speed_DC[0]);
+                    ref[2] = set_ref;
+                    PIDmotors(ref[2], Elbow, control[2], error[2],angle_DC[0],speed_DC[0]);
                     Elbow_Motor.setSpeed(control[2]);
                     break;
                 }
                 case Wrist: // DC2
                 {
-                    PIDmotors(ref, Wrist, control[3], error[3],angle_DC[1],speed_DC[1]);
+                    ref[3] = set_ref;
+                    PIDmotors(ref[3], Wrist, control[3], error[3],angle_DC[1],speed_DC[1]);
                     Wrist_Motor.setSpeed(control[3]);
                     break;
                 }
                 case Gripper:
                 {
                     Air_pump.setSpeed(100);
+                    break;
+                }
+                case Home:
+                {
+                    home_reached = MoveHome(home_freq);
+                    printf("Moving to home, freq: %.2f, reached: %d\n", home_freq, home_reached);
                     break;
                 }
 
@@ -108,7 +119,7 @@ extern "C" void app_main()
                 int motor_tmp;
                 uart.read(buffer_in, len);
                 printf("RX RAW: [%s]\n", buffer_in);
-                sscanf(buffer_in, "%d,%d", &motor_tmp, &ref);
+                sscanf(buffer_in, "%d,%f,%f", &motor_tmp, &set_ref, &home_freq);
                 motor_case = (MotorTypes)motor_tmp;
             }
         }
@@ -117,5 +128,34 @@ extern "C" void app_main()
         {
             status = DetectMagnet(motor_case,motor_case);
         }*/
+
+        /*
+        while (uart.available())
+        {
+            // printf("hola: \n");
+            char c;
+            uart.read(&c, 1);
+
+            if (c == '\n')
+            {
+                buffer[index] = '\0';
+
+                sscanf(buffer, "%f", &ref);
+
+                index = 0;
+                // printf("recibido: %s\n",buffer);
+            }
+            else if (index < sizeof(buffer) - 1)
+            {
+                buffer[index++] = c;
+                // printf("elseif:\n");
+            }
+            else
+            {
+                index = 0;
+                // printf("overflow \n");
+            }
+        }
+            */
     }
 }

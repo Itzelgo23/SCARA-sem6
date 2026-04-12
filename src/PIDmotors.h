@@ -13,11 +13,17 @@ void PIDmotors(int move_ref, uint8_t robot_section, float &control_out, float &e
     }
 
     // correct sensor based on motor type
-    if (robot_section == Base || robot_section == Shoulder)
+    if (robot_section == Base)
+    {
+        measurement = Base_Motor.getAngle();
+        speed_out = Base_Motor.getSpeed();
+        printf("Stepper angle: %.2f\n", measurement);
+    }
+        
+    else if(robot_section == Shoulder)
     {
         magE[i].readRawAngle();
         measurement = magE[i].getTotalAngle();
-        measurement_out = measurement;
         speed_out = magE[i].getSpeed();
 
         printf("Stepper angle: %.2f\n", measurement);
@@ -29,7 +35,7 @@ void PIDmotors(int move_ref, uint8_t robot_section, float &control_out, float &e
         if (robot_section == Wrist)
             i = 1;
         measurement = quadE[i].getAngle();
-        measurement_out = measurement;
+        
         speed_out = quadE[i].getSpeed();
         printf("DC angle: %.2f\n", measurement);
     }
@@ -40,10 +46,9 @@ void PIDmotors(int move_ref, uint8_t robot_section, float &control_out, float &e
         error_out = 0;
         return;
     }
-    // error[i] = measurement[i] - ref;
+    measurement_out = measurement;
     error_out = move_ref - measurement;
-
-    // prev_error[i] = error[i];
+    
     control_out = pid[i].calculate(error_out);
     printf("Error: %.2f| Control: %.2f\n", error_out, control_out);
 

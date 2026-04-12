@@ -17,6 +17,8 @@ private:
     float _target_angle = 0.0;
     float _freq = 0.0;
     float _maxfreq = 0.0;
+    int64_t _prev_pulse_t = 0;
+    int _inst_speed = 0;
 
     void IRAM_ATTR handler();
 
@@ -26,9 +28,8 @@ public:
     void setup(uint8_t pins[2], uint8_t ch, TimerConfig *stepper_timer, uint8_t microsteps, int max_freq);
     float set(float control, float error);
     void setSpeed(float freq);
+    float getSpeed();
     float getAngle();
-    void counter(int8_t dir);
-    void setHome(int homefreq);
     void isHome();
 };
 

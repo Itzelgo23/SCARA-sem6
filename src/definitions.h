@@ -6,6 +6,7 @@
 #include <AS5600.h>
 #include <SimpleTimer.h>
 #include <SimpleI2C.h>
+#include <SimpleGPIO.h>
 #include <Stepper.h>
 #include <QuadratureEncoder.h>
 #include <PID.h>
@@ -45,7 +46,8 @@ enum MotorTypes
     Shoulder = 2, // Stepper2
     Elbow = 3,    // DC1
     Wrist = 4,    // DC2
-    Gripper = 5
+    Gripper = 5,
+    Home = 6
 };
 MotorTypes motor_case = Base;
 
@@ -116,8 +118,8 @@ HBridge Elbow_Motor; //left and right
 HBridge Wrist_Motor; //left and right
 HBridge Air_pump;
 
-// End of race sensor
-SimpleGPIO EoR;
+// Limit switch sensor
+SimpleGPIO LimitSwitch;
 
 SimpleUART uart(115200);
 
@@ -145,8 +147,8 @@ uint8_t W_pins[2] = {18, 19}; //black,blue
 uint8_t quad_W_pins[2] = {34, 23}; //yellow, green
 
 uint8_t G_pins = 4;
-// End of race
-uint8_t EoR_pin = 35;
+// Limit switch pin
+uint8_t LS_pin = 35;
 #pragma endregion
 
 #pragma region Channel defines
@@ -172,10 +174,18 @@ const float step_angle = 1.8f;
 float max_freq = 750.0f;
 float speed_S[2] = {0.0,0.0};
 float angle_S[2] = {0.0,0.0};
+float home_freq;
 #pragma endregion
 
 #pragma region AS5600 defines
 uint8_t mag_status = 0;
+#pragma endregion
+
+#pragma region Limit Switch variables
+bool pressed = false;
+bool prev_pressed = false;
+bool is_home = false;
+bool home_reached = false;
 #pragma endregion
 
 #pragma region PID variables
@@ -186,7 +196,8 @@ float prev_error[4] = {0.0, 0.0, 0.0, 0.0};
 
 float control[4];
 
-int ref = 0;
+float ref[4] = {0.0, 0.0, 0.0, 0.0};
+float set_ref = 0.0;
 
 float PID_gains[3] = {1.0, 0.2, 0.0};
 float PID_DC_gains[3] = {1.0f, 0.0f, 0.0};

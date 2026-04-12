@@ -25,6 +25,25 @@ void ServoStepper::setup(uint8_t pins[2], uint8_t ch, TimerConfig *stepper_timer
 
 void ServoStepper::handler()
 {
+    int64_t current_pulse_t = esp_timer_get_time();    
+    if (_prev_pulse_t != 0)
+    {
+        int64_t dt = current_pulse_t - _prev_pulse_t;
+
+        if (dt > 0)
+        {
+            float step_angle = _deg_pulse / _microsteps;
+
+            float speed = (step_angle * 1000000.0f) / dt;
+
+            if (_freq > 0)
+                _inst_speed = speed;
+            else
+                _inst_speed = -speed;
+        }
+    }
+    _prev_pulse_t = current_pulse_t;
+
     if (_freq > 0)
         _counter++;
     else
@@ -45,10 +64,14 @@ float ServoStepper::set(float control, float error)
     return _freq;
 }
 
-
 void ServoStepper::setSpeed(float freq)
 {
     stepper.setSpeed(freq);
+}
+
+float ServoStepper::getSpeed()
+{
+    return _inst_speed;
 }
 
 float ServoStepper::getAngle()
@@ -56,11 +79,6 @@ float ServoStepper::getAngle()
     _angle = _counter * _deg_pulse / _microsteps;
     // printf("angle: %d\n", _angle);
     return _angle;
-}
-
-void ServoStepper::setHome(int homefreq)
-{
-    stepper.setSpeed(homefreq);
 }
 
 void ServoStepper::isHome()
