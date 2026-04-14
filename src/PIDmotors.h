@@ -1,6 +1,6 @@
 #include "definitions.h"
 
-void PIDmotors(int move_ref, uint8_t robot_section, float &control_out, float &error_out, float &measurement_out, float &speed_out)
+void PIDmotors(float move_ref, uint8_t robot_section, float &control_out, float &error_out, float &measurement_out, float &speed_out)
 {
     int i = robot_section - 1; // 0-3 index
     float measurement;
@@ -16,15 +16,17 @@ void PIDmotors(int move_ref, uint8_t robot_section, float &control_out, float &e
     if (robot_section == Base)
     {
         measurement = Base_Motor.getAngle();
+        error_out = move_ref - measurement;
         speed_out = Base_Motor.getSpeed();
         printf("Stepper angle: %.2f\n", measurement);
     }
         
     else if(robot_section == Shoulder)
     {
-        magE[i].readRawAngle();
-        measurement = magE[i].getTotalAngle();
-        speed_out = magE[i].getSpeed();
+        magE.readRawAngle();
+        measurement = magE.getTotalAngle();
+        error_out = move_ref - measurement;
+        speed_out = magE.getSpeed();
 
         printf("Stepper angle: %.2f\n", measurement);
     }
@@ -35,7 +37,7 @@ void PIDmotors(int move_ref, uint8_t robot_section, float &control_out, float &e
         if (robot_section == Wrist)
             i = 1;
         measurement = quadE[i].getAngle();
-        
+        error_out = move_ref - measurement;
         speed_out = quadE[i].getSpeed();
         printf("DC angle: %.2f\n", measurement);
     }
@@ -47,7 +49,7 @@ void PIDmotors(int move_ref, uint8_t robot_section, float &control_out, float &e
         return;
     }
     measurement_out = measurement;
-    error_out = move_ref - measurement;
+    
     
     control_out = pid[i].calculate(error_out);
     printf("Error: %.2f| Control: %.2f\n", error_out, control_out);

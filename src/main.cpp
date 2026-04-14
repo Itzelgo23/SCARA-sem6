@@ -12,15 +12,13 @@ interrupt_AS5600(void *arg)
 extern "C" void app_main()
 {
     esp_task_wdt_deinit();
-
+    gpio_install_isr_service(ESP_INTR_FLAG_IRAM);
+    
     i2c.setup_master(21, 22, 100000, I2C_NUM_1);
-    magE[0].setup(i2c);
-    magE[1].setup(i2c);
-    // magE[1].setup(i2c);
+    magE.setup(i2c);
     timer.setup(interrupt_AS5600, "AS5600 Timer");
     timer.startPeriodic(dt_us);
-
-    Base_Motor.setup(B_pins, B_ch, &Base_config, 4, max_freq);
+    
     Shoulder_Motor.setup(S_pins, S_ch, &Shoulder_config, max_freq);
     Elbow_Motor.setup(E_pins, E_ch, &DC_config);
     Wrist_Motor.setup(W_pins, W_ch, &DC_config);
@@ -36,6 +34,7 @@ extern "C" void app_main()
     pid[2].setup(PID_DC_gains, PID_us / 1000000.0f);
     pid[3].setup(PID_DC_gains, PID_us / 1000000.0f);
 
+    Base_Motor.setup(B_pins, B_ch, &Base_config, 4, max_freq);
     prev = esp_timer_get_time();
     while (1)
     {
@@ -54,7 +53,7 @@ extern "C" void app_main()
                     Shoulder_Motor.setSpeed(0);
                     Elbow_Motor.setSpeed(0);
                     Wrist_Motor.setSpeed(0);
-                    uint8_t magnetRead = magE[1].readMagnet();
+                    uint8_t magnetRead = magE.readMagnet();
                     printf("Magnet Status: %d\n", magnetRead);
                     vTaskDelay(pdMS_TO_TICKS(500));
                     break;
@@ -62,7 +61,7 @@ extern "C" void app_main()
                 case Base: // Stepper1
                 {
                     ref[0] = set_ref;
-                    printf("moving base motor, ref: %d\n", ref);
+                    printf("moving base motor, ref: %.2f\n", ref[0]);
                     PIDmotors(ref[0], Base, control[0], error[0],angle_S[0],speed_S[0]);
                     Base_Motor.set(control[0], error[0]);
                     //printf("Angle: %.2f | Speed: %.2f | Current time: %d\n",angle_S[0],speed_S[0],current);  

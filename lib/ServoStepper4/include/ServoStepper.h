@@ -10,12 +10,13 @@ private:
     SimpleGPIO pulse;
     SimpleGPIO sensor;
     Stepper stepper;
-    int _counter = 0;
+    volatile int _counter = 0;
+    volatile int _dir = 0;
     float _deg_pulse = 1.8f;
     uint8_t _microsteps;
     float _angle = 0.0;
     float _target_angle = 0.0;
-    float _freq = 0.0;
+    volatile float _freq = 0.0;
     float _maxfreq = 0.0;
     int64_t _prev_pulse_t = 0;
     int _inst_speed = 0;

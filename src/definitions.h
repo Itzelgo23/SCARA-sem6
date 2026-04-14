@@ -107,7 +107,7 @@ SimpleTimer timer;
 SimpleI2C i2c;
 
 // Control
-AS5600 magE[2];
+AS5600 magE;
 QuadratureEncoder quadE[2];
 PID pid[4];
 
@@ -199,7 +199,7 @@ float control[4];
 float ref[4] = {0.0, 0.0, 0.0, 0.0};
 float set_ref = 0.0;
 
-float PID_gains[3] = {1.0, 0.2, 0.0};
+float PID_gains[3] = {100.0, 0.0, 0.0};
 float PID_DC_gains[3] = {1.0f, 0.0f, 0.0};
 uint64_t PID_us     = 10000;
 #pragma endregion

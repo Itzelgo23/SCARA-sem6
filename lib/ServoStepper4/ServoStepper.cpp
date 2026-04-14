@@ -12,20 +12,23 @@ ServoStepper::~ServoStepper()
 
 void ServoStepper::setup(uint8_t pins[2], uint8_t ch, TimerConfig *stepper_timer, uint8_t microsteps, int max_freq)
 {
-    
-    stepper.setup(pins, ch, stepper_timer, max_freq);
-
+    gpio_set_direction((gpio_num_t)pins[1], GPIO_MODE_INPUT);
     gpio_set_intr_type((gpio_num_t)pins[1], GPIO_INTR_POSEDGE);
-    gpio_install_isr_service(ESP_INTR_FLAG_IRAM);
     gpio_isr_handler_add((gpio_num_t)pins[1], [](void *arg)
                          { static_cast<ServoStepper *>(arg)->handler(); }, this);
+
+    // LEDC setup AFTER
+    stepper.setup(pins, ch, stepper_timer,max_freq);
+
     _microsteps = microsteps;
     _maxfreq = max_freq;
 }
 
 void ServoStepper::handler()
 {
-    int64_t current_pulse_t = esp_timer_get_time();    
+    _counter += _dir;
+
+    /*int64_t current_pulse_t = esp_timer_get_time();    
     if (_prev_pulse_t != 0)
     {
         int64_t dt = current_pulse_t - _prev_pulse_t;
@@ -48,6 +51,7 @@ void ServoStepper::handler()
         _counter++;
     else
         _counter--;
+        */
 }
 
 float ServoStepper::set(float control, float error)
@@ -60,6 +64,9 @@ float ServoStepper::set(float control, float error)
     else
         _freq = control;
 
+    _dir = (_freq > 0) ? 1 : (_freq < 0) ? -1 : 0;
+
+    printf("Control: %.2f | Error: %.2f | Set freq: %.2f\n", control, error, _freq);
     stepper.setSpeed(_freq);
     return _freq;
 }
@@ -77,7 +84,7 @@ float ServoStepper::getSpeed()
 float ServoStepper::getAngle()
 {
     _angle = _counter * _deg_pulse / _microsteps;
-    // printf("angle: %d\n", _angle);
+    printf("angle: %.2f | counter: %d\n", _angle, _counter);
     return _angle;
 }
 
@@ -86,5 +93,5 @@ void ServoStepper::isHome()
     stepper.setSpeed(0);
     _counter = 0;
     _angle = 0;
-    // printf("Homing done! counter: %d | angle: %d\n", _counter, _angle);
+    // printf("Homing done! counter: %d | angle: %.2f\n", _counter, _angle);
 }
