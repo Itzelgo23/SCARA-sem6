@@ -20,6 +20,7 @@ private:
     float _maxfreq = 0.0;
     int64_t _prev_pulse_t = 0;
     int _inst_speed = 0;
+    gpio_num_t _gpio_num;
 
     void IRAM_ATTR handler();
 

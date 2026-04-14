@@ -39,7 +39,7 @@ void PIDmotors(float move_ref, uint8_t robot_section, float &control_out, float 
         measurement = quadE[i].getAngle();
         error_out = move_ref - measurement;
         speed_out = quadE[i].getSpeed();
-        printf("DC angle: %.2f\n", measurement);
+        //printf("DC angle: %.2f\n", measurement);
     }
     else
     {
@@ -52,7 +52,7 @@ void PIDmotors(float move_ref, uint8_t robot_section, float &control_out, float 
     
     
     control_out = pid[i].calculate(error_out);
-    printf("Error: %.2f| Control: %.2f\n", error_out, control_out);
+    //printf("Error: %.2f| Control: %.2f\n", error_out, control_out);
 
     prev_error[i] = error_out;
 }

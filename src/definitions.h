@@ -127,6 +127,7 @@ SimpleUART uart(115200);
 
 #pragma region UART varaibles
 char buffer_in[32];
+static int index = 0;
 #pragma endregion
 //--------------------------
 // Pin and channel definitions
@@ -140,10 +141,10 @@ uint8_t B_pins[2] = {32, 33}; // dir, step
 uint8_t S_pins[2] = {25, 26}; // dir, step
 
 // DC pins
-uint8_t E_pins[2] = {27, 13}; //black,blue
-uint8_t quad_E_pins[2] = {36, 39}; //VP, VN //yellow,green
+uint8_t E_pins[2] = {27, 13}; //white,red
+uint8_t quad_E_pins[2] = {36, 39}; //VP, VN //green, yellow
 
-uint8_t W_pins[2] = {18, 19}; //black,blue
+uint8_t W_pins[2] = {18, 19}; //white,red
 uint8_t quad_W_pins[2] = {34, 23}; //yellow, green
 
 uint8_t G_pins = 4;
@@ -209,7 +210,7 @@ uint64_t PID_us     = 10000;
 //--------------------------
 #pragma region Time Polling defines
 uint64_t prev = 0, current = 0;
-uint64_t dt_us = 10000; // 1ms
+uint64_t dt_us = 1000; // 1ms
 #pragma endregion
 
 #endif // __DEFINITIONS_H__

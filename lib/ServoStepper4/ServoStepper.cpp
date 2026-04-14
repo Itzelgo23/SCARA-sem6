@@ -8,10 +8,13 @@ ServoStepper::ServoStepper()
 
 ServoStepper::~ServoStepper()
 {
+    gpio_isr_handler_remove(_gpio_num);
 }
 
 void ServoStepper::setup(uint8_t pins[2], uint8_t ch, TimerConfig *stepper_timer, uint8_t microsteps, int max_freq)
 {
+    gpio_install_isr_service(ESP_INTR_FLAG_IRAM);
+    _gpio_num = (gpio_num_t)pins[1];
     gpio_set_direction((gpio_num_t)pins[1], GPIO_MODE_INPUT);
     gpio_set_intr_type((gpio_num_t)pins[1], GPIO_INTR_POSEDGE);
     gpio_isr_handler_add((gpio_num_t)pins[1], [](void *arg)
