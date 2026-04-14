@@ -16,6 +16,7 @@ extern "C" void app_main()
 
     i2c.setup_master(21, 22, 100000, I2C_NUM_1);
     magE.setup(i2c);
+    i2c.scan_bus(); // Add this after setup_master() to confirm what's on the bus
     timer.setup(interrupt_AS5600, "AS5600 Timer");
     timer.startPeriodic(dt_us);
 
@@ -34,6 +35,7 @@ extern "C" void app_main()
     Base_Motor.setup(B_pins, B_ch, &Base_config, 4, max_freq);
     quadE[0].setup(quad_E_pins, DpE_Elbow);
     quadE[1].setup(quad_W_pins, DpE_Wrist);
+
     prev = esp_timer_get_time();
     while (1)
     {
@@ -54,7 +56,7 @@ extern "C" void app_main()
                     Wrist_Motor.setSpeed(0);
 
                     uint8_t magnetRead = magE.readMagnet();
-                    //printf("Magnet Status: %d\n", magnetRead);
+                    printf("Magnet Status: %d\n", magnetRead);
                     vTaskDelay(pdMS_TO_TICKS(500));
                     break;
                 }
@@ -116,7 +118,7 @@ extern "C" void app_main()
                     Shoulder_Motor.setSpeed(0);
                     Elbow_Motor.setSpeed(0);
                     Wrist_Motor.setSpeed(0);
-                    
+
                     Air_pump.setSpeed(100);
                     break;
                 }
@@ -124,6 +126,11 @@ extern "C" void app_main()
                 {
                     home_reached = MoveHome(home_freq);
                     printf("Moving to home, freq: %.2f, reached: %d\n", home_freq, home_reached);
+                    if(home_reached){
+                        printf("Home position reached\n");
+                        //Add for motor to retract 10 steps to ensure it's off the limit switch
+                        motor_case = Initial; // Reset to initial after homing
+                    }
                     break;
                 }
 
@@ -137,6 +144,7 @@ extern "C" void app_main()
                 Shoulder_Motor.setSpeed(0);
                 Elbow_Motor.setSpeed(0);
                 Wrist_Motor.setSpeed(0);
+                Air_pump.setSpeed(0);
                 break;
             }
             /*int len = uart.available();
@@ -150,10 +158,10 @@ extern "C" void app_main()
             }*/
         }
 
-        /*if (timer.interruptAvailable())
+        if (timer.interruptAvailable())
         {
             status = DetectMagnet(motor_case,motor_case);
-        }*/
+        }
 
         
         while (uart.available())

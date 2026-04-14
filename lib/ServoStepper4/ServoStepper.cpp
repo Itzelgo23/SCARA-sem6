@@ -96,5 +96,6 @@ void ServoStepper::isHome()
     stepper.setSpeed(0);
     _counter = 0;
     _angle = 0;
+    
     // printf("Homing done! counter: %d | angle: %.2f\n", _counter, _angle);
 }

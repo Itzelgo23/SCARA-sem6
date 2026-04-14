@@ -49,7 +49,7 @@ enum MotorTypes
     Gripper = 5,
     Home = 6
 };
-MotorTypes motor_case = Base;
+MotorTypes motor_case = Initial;
 
 enum PS4state {
     xUp = 0,

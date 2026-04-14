@@ -10,11 +10,14 @@ bool MoveHome(float home_freq)
         pid[0].reset();
         ref[0] = 0.0;
         is_home = true;
+        printf("Home position detected. Pressed: %d\n", pressed);
     }
-    else 
+    else
     {
+        prev_pressed = pressed;
         Base_Motor.setSpeed(home_freq);
+        is_home = false;
     }
-    
+
     return is_home;
 }
