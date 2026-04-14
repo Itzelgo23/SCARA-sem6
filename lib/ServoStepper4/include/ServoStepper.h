@@ -10,15 +10,14 @@ private:
     SimpleGPIO pulse;
     SimpleGPIO sensor;
     Stepper stepper;
-    int _counter = 0;
+    volatile int _counter = 0;
     float _deg_pulse = 1.8f;
     uint8_t _microsteps;
     float _angle = 0.0;
     float _target_angle = 0.0;
-    float _freq = 0.0;
+    volatile float _freq = 0.0;
     float _maxfreq = 0.0;
 
-    void IRAM_ATTR handler();
 
 public:
     ServoStepper();
@@ -29,6 +28,7 @@ public:
     float getAngle();
     void setHome(int homefreq);
     void isHome();
+    void IRAM_ATTR handler();
 };
 
 #endif // __SERVOSTEPPER_H__

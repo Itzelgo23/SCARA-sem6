@@ -14,8 +14,7 @@ SimpleUART uart(115200);
 uint64_t prev = 0, current = 0;
 uint64_t dt_us = 1000; // 1 ms
 
-uint8_t step_pin[2] = {16,17}; //dir, step
-uint8_t pulse_pin = 23;
+uint8_t step_pin[2] = {32,33}; //dir, step
 uint8_t step_ch = 0;
 float freq = 100.0;
 

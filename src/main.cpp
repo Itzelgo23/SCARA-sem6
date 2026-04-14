@@ -1,17 +1,16 @@
 #include "definitions.h"
-volatile int counter = 0;
-
-volatile bool pulse_Interrupt = false;
-
+#include "esp_rom_sys.h"
 
 extern "C" void app_main()
 {
     esp_task_wdt_deinit();
 
-    stepper.setup(step_pin, step_ch, &Base_config, 4, 750);
+    gpio_install_isr_service(ESP_INTR_FLAG_IRAM);
 
     pid.setup(PID_gains, PID_us / 1000000.0f);
 
+    stepper.setup(step_pin, step_ch, &Base_config, 4, 750);
+    
     prev = esp_timer_get_time();
     while (1)
     {   
@@ -25,7 +24,7 @@ extern "C" void app_main()
             control = pid.calculate(error);
             // PIDmotors(ref, Base, control, error,measurement,measurement);
             freq = stepper.set(control, error);
-            printf("Ref: %.2f, Meas: %.2f, Err: %.2f, Ctrl: %.2f\n", ref, measurement, error, control);
+            //printf("Ref: %.2f, Meas: %.2f, Err: %.2f, Ctrl: %.2f\n", ref, measurement, error, control);
         }
         while (uart.available())
         {
