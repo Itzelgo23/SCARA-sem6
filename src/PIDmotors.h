@@ -3,6 +3,7 @@
 void PIDmotors(float move_ref, uint8_t robot_section, float &control_out, float &error_out, float &measurement_out, float &speed_out)
 {
     int i = robot_section - 1; // 0-3 index
+    int j; // for DC motor selection
     float measurement;
     if (i < 0 || i > 3)
     {
@@ -33,12 +34,12 @@ void PIDmotors(float move_ref, uint8_t robot_section, float &control_out, float 
     else if (robot_section == Elbow || robot_section == Wrist)
     {
         if (robot_section == Elbow)
-            i = 0;
+            j = 0;
         if (robot_section == Wrist)
-            i = 1;
-        measurement = quadE[i].getAngle();
+            j = 1;
+        measurement = quadE[j].getAngle();
         error_out = move_ref - measurement;
-        speed_out = quadE[i].getSpeed();
+        speed_out = quadE[j].getSpeed();
         //printf("DC angle: %.2f\n", measurement);
     }
     else

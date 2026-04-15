@@ -97,6 +97,8 @@ extern "C" void app_main()
                     PIDmotors(ref[2], Elbow, control[2], error[2], angle_DC[0], speed_DC[0]);
                     Elbow_Motor.setSpeed(control[2]);
                     printf("%.2f,%.2f,%d\n",angle_DC[0],speed_DC[0],current);
+                    //Elbow_Motor.setSpeed(ref[2]);
+                    //printf("%.2f,%.2f,%d\n",quadE[0].getAngle(),quadE[0].getSpeed(),current);
                     break;
                 }
                 case Wrist: // DC2
@@ -158,10 +160,10 @@ extern "C" void app_main()
             }*/
         }
 
-        if (timer.interruptAvailable())
+        /*if (timer.interruptAvailable())
         {
             status = DetectMagnet(motor_case,motor_case);
-        }
+        }*/
 
         
         while (uart.available())

@@ -201,7 +201,7 @@ float ref[4] = {0.0, 0.0, 0.0, 0.0};
 float set_ref = 0.0;
 
 float PID_gains[3] = {100.0, 0.0, 0.0};
-float PID_DC_gains[3] = {1.0f, 0.0f, 0.0};
+float PID_DC_gains[3] = {1.025f, 0.0f, 0.0};
 uint64_t PID_us     = 10000;
 #pragma endregion
 
