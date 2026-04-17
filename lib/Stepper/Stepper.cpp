@@ -38,7 +38,7 @@ void Stepper::setSpeed(int speed)
         step.setFrequency((speed));
     }
     
-    printf("%ld\n", speeed);
+    //printf("%ld\n", speeed);
     
 }
 float Stepper::set(float control, float error)
@@ -52,6 +52,9 @@ float Stepper::set(float control, float error)
         _freq = control;
 
     setSpeed(_freq);
+    //printf("Control: %.2f | Error: %.2f | Set freq: %.2f\n", control, error, _freq);
     return _freq;
 }
+
+
 

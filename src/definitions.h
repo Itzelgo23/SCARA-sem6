@@ -74,8 +74,8 @@ PS4state PS4_state = xUp;
 #pragma region TIMERS defines
 TimerConfig Base_config = {
     .timer = LEDC_TIMER_0,
-    .frequency = 300,
-    .bit_resolution = LEDC_TIMER_10_BIT,
+    .frequency = 100,
+    .bit_resolution = LEDC_TIMER_14_BIT,
     .mode = LEDC_LOW_SPEED_MODE};
 
 TimerConfig Shoulder_config = {
@@ -171,8 +171,9 @@ float angle_DC[2] = {0.0,0.0};
 #pragma endregion
 
 #pragma region Stepper variables
+//0.42A when shoulder moves, 0.31A when not moving.
 const float step_angle = 1.8f;
-float max_freq = 750.0f;
+float max_freq[2] = {1000.0f,50.0f}; //base, shoulder
 float speed_S[2] = {0.0,0.0};
 float angle_S[2] = {0.0,0.0};
 float home_freq;
@@ -180,6 +181,7 @@ float home_freq;
 
 #pragma region AS5600 defines
 uint8_t mag_status = 0;
+float angle_AS5600 = 0.0;
 #pragma endregion
 
 #pragma region Limit Switch variables
@@ -200,8 +202,9 @@ float control[4];
 float ref[4] = {0.0, 0.0, 0.0, 0.0};
 float set_ref = 0.0;
 
-float PID_gains[3] = {100.0, 0.0, 0.0};
-float PID_DC_gains[3] = {1.025f, 0.0f, 0.0};
+float PID_B_gains[3] = {30.0, 0.0, 0.0}; //no encoder
+float PID_S_gains[3] = {12.5, 0.0, 0.0}; //mag encoder
+float PID_DC_gains[3] = {1.025f, 0.0f, 0.0};  
 uint64_t PID_us     = 10000;
 #pragma endregion
 

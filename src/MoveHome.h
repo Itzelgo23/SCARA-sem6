@@ -7,8 +7,8 @@ bool MoveHome(float home_freq)
     {
         prev_pressed = pressed;
         Base_Motor.isHome();
-        pid[0].reset();
-        ref[0] = 0.0;
+        //pid[1].reset();
+        ref[1] = 0.0;
         is_home = true;
         printf("Home position detected. Pressed: %d\n", pressed);
     }

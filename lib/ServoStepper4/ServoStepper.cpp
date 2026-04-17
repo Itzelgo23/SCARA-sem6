@@ -87,7 +87,7 @@ float ServoStepper::getSpeed()
 float ServoStepper::getAngle()
 {
     _angle = _counter * _deg_pulse / _microsteps;
-    printf("angle: %.2f | counter: %d\n", _angle, _counter);
+    //printf("angle: %.2f | counter: %d\n", _angle, _counter);
     return _angle;
 }
 
