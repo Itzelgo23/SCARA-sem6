@@ -51,6 +51,10 @@ private:
     void correctAngle();
     void quadrantAngle();
 
+    float prev_raw_angle = 0.0f;
+    float totalAngle = 0.0f;
+    bool first_read = true;
+
     uint8_t magnet_status;
     MagnetStatus status;
     SimpleI2C *_I2C_ESP;
@@ -67,7 +71,7 @@ private:
     int resolution = 4096; // 12 bits
     float corrected_Angle;
     float start_Angle;
-    float totalAngle;      // absolute displacement
+    //float totalAngle;      // absolute displacement
     float current_Angle;
     float prev_Angle = 0;
     float delta_Angle;
@@ -76,7 +80,7 @@ private:
 #pragma region Quadrant detection variables
     int quadrant;      // 1,2,3,4
     int prev_Quadrant; // 1,2,3,4
-    float number_of_turns;
+    float number_of_turns = 0;
 #pragma endregion
 };
 

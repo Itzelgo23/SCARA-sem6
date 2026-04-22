@@ -21,16 +21,16 @@ extern "C" void app_main()
     timer.startPeriodic(dt_us);
 
     Shoulder_Motor.setup(S_pins, S_ch, &Shoulder_config, max_freq[1]);
-    Elbow_Motor.setup(E_pins, E_ch, &DC_config);
-    Wrist_Motor.setup(W_pins, W_ch, &DC_config);
+    Elbow_Motor.setup(E_pins, E_ch, &DC_config, max_DC_freq[0]);
+    Wrist_Motor.setup(W_pins, W_ch, &DC_config, max_DC_freq[1]);
     // Air_pump.setup(G_pins, G_ch, &Extra_config);
 
     LimitSwitch.setup(LS_pin, GPI, GPIO_PULLDOWN_ONLY);
 
     pid[0].setup(PID_B_gains, PID_us / 1000000.0f);
     pid[1].setup(PID_S_gains, PID_us / 1000000.0f);
-    pid[2].setup(PID_DC_gains, PID_us / 1000000.0f);
-    pid[3].setup(PID_DC_gains, PID_us / 1000000.0f);
+    pid[2].setup(PID_E_gains, PID_us / 1000000.0f);
+    pid[3].setup(PID_W_gains, PID_us / 1000000.0f);
 
     Base_Motor.setup(B_pins, B_ch, &Base_config, 4, max_freq[0]);
     quadE[0].setup(quad_E_pins, DpE_Elbow);
@@ -71,7 +71,7 @@ extern "C" void app_main()
                     // printf("moving base motor, ref: %.2f\n", ref[0]);
                     angle_AS5600 = cm2deg(ref[0], 8.0f);
                     PIDmotors(angle_AS5600, Base, control[0], error[0], angle_S[0], speed_S[0]);
-                    //printf("cm: %.2f |deg: %.2f\n", ref[0], angle_AS5600);
+                    // printf("cm: %.2f |deg: %.2f\n", ref[0], angle_AS5600);
                     Base_Motor.set(control[0], error[0]);
                     break;
                 }
@@ -81,11 +81,21 @@ extern "C" void app_main()
                     Elbow_Motor.setSpeed(0);
                     Wrist_Motor.setSpeed(0);
                     Air_pump.setSpeed(0);
-
                     ref[1] = set_ref;
+                    /*if (set_ref == 0)
+                    {
+                        float turns = round(angle_S[1] / 1080.0f);
+                        ref[1] = turns * 1080.0f;
+                    }
+                    
+                    else
+                    {
+                        ref[1] = 3 * set_ref;
+                    }*/
+
                     PIDmotors(ref[1], Shoulder, control[1], error[1], angle_S[1], speed_S[1]);
-                    printf("ref: %.2f | angle: %.2f | control: %.2f | error: %.2f\n", ref[1], angle_S[1], control[1], error[1]);
                     Shoulder_Motor.set(control[1], error[1]);
+                    printf("ref: %.2f | angle: %.2f | control: %.2f | error: %.2f\n", ref[1], angle_S[1], control[1], error[1]);
                     break;
                 }
                 case Elbow: // DC1
@@ -98,9 +108,10 @@ extern "C" void app_main()
                     ref[2] = set_ref;
                     PIDmotors(ref[2], Elbow, control[2], error[2], angle_DC[0], speed_DC[0]);
                     Elbow_Motor.setSpeed(control[2]);
-                    printf("%.2f,%.2f,%d\n", angle_DC[0], speed_DC[0], current);
-                    // Elbow_Motor.setSpeed(ref[2]);
-                    // printf("%.2f,%.2f,%d\n",quadE[0].getAngle(),quadE[0].getSpeed(),current);
+                    printf("ref: %.2f | angle: %.2f | control: %.2f | error: %.2f\n", ref[2], angle_DC[0], control[2], error[2]);
+                    //printf("%.2f,%.2f,%d\n", angle_DC[0], speed_DC[0], current);
+                    //Elbow_Motor.setSpeed(ref[2]);
+                    //printf("%.2f,%.2f,%d\n",quadE[0].getAngle(),quadE[0].getSpeed(),current);
                     break;
                 }
                 case Wrist: // DC2
@@ -113,7 +124,7 @@ extern "C" void app_main()
                     ref[3] = set_ref;
                     PIDmotors(ref[3], Wrist, control[3], error[3], angle_DC[1], speed_DC[1]);
                     Wrist_Motor.setSpeed(control[3]);
-                    printf("%.2f,%.2f,%d\n", angle_DC[1], speed_DC[1], current);
+                    printf("ref: %.2f | angle: %.2f | control: %.2f | error: %.2f\n", ref[3], angle_DC[1], control[3], error[3]);
                     break;
                 }
                 case Gripper:
@@ -163,10 +174,10 @@ extern "C" void app_main()
             }*/
         }
 
-        if (timer.interruptAvailable())
+        /*if (timer.interruptAvailable())
         {
             status = DetectMagnet(motor_case,motor_case);
-        }
+        }*/
 
         while (uart.available())
         {

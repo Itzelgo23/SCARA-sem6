@@ -82,12 +82,12 @@ void AS5600::correctAngle() //-15 --> 345
 
 void AS5600::quadrantAngle()
 {
-    /*
+
     //Quadrants
-    4 | 1
-    -----
-    3 | 2
-    */
+    //4 | 1
+    //-----
+    //3 | 2
+
     // quadrant detection can be changed from every 90 to every 45 degrees
     if (degAngle >= 0 && degAngle < 90)
         quadrant = 1;
@@ -114,16 +114,48 @@ uint16_t AS5600::readRawAngle()
     read16(RAW_ANGLE, rawAngle);
     degAngle = (rawAngle * 360.0) / resolution;
 
-    correctAngle();
-    quadrantAngle();
+    //correctAngle();
+    //quadrantAngle();
 
     return rawAngle;
 }
 
 float AS5600::getTotalAngle()
 {
-    totalAngle = corrected_Angle + (number_of_turns * 360);
+    float current = degAngle; // 0–360
+
+    if (first_read)
+    {
+        prev_raw_angle = current;
+        totalAngle = current;
+        first_read = false;
+        current_Angle = totalAngle;
+        return totalAngle;
+    }
+
+    float delta = current - prev_raw_angle;
+
+    // 🔥 UNWRAP (clave)
+    if (delta > 180.0f)
+        delta -= 360.0f;
+    else if (delta < -180.0f)
+        delta += 360.0f;
+    //agregar conteo de vueltas
+    if(prev_raw_angle == 359.0f && current == 0.0f)
+        number_of_turns++;
+    else if(prev_raw_angle == 0.0f && current == 359.0f)
+        number_of_turns--;
+
+    totalAngle += delta;
+
+    prev_raw_angle = current;
     current_Angle = totalAngle;
+    /*
+    totalAngle = corrected_Angle + (number_of_turns * 360); 
+    current_Angle = totalAngle; 
+    return totalAngle;
+    */
+
     return totalAngle;
 }
 

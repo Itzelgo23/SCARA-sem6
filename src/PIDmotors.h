@@ -19,7 +19,7 @@ void PIDmotors(float move_ref, uint8_t robot_section, float &control_out, float 
         measurement = Base_Motor.getAngle();
         error_out = move_ref - measurement;
         speed_out = Base_Motor.getSpeed();
-        printf("Stepper angle: %.2f\n", measurement);
+        //printf("Stepper angle: %.2f\n", measurement);
     }
         
     else if(robot_section == Shoulder)
@@ -29,7 +29,7 @@ void PIDmotors(float move_ref, uint8_t robot_section, float &control_out, float 
         error_out = move_ref - measurement;
         speed_out = magE.getSpeed();
 
-        printf("Stepper angle: %.2f\n", measurement);
+        //printf("Stepper angle: %.2f\n", measurement);
     }
     else if (robot_section == Elbow || robot_section == Wrist)
     {

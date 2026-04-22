@@ -8,10 +8,11 @@ class HBridge
 {
 private:
     SimplePWM pwm[2];
+    float _maxfreq;
 public:
     HBridge();
     ~HBridge();
-    void setup(uint8_t pins[2], uint8_t channel[2],TimerConfig *config);
+    void setup(uint8_t pins[2], uint8_t channel[2],TimerConfig *config, float max_freq);
     void setSpeed(float duty);
 };
 

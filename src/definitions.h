@@ -86,7 +86,7 @@ TimerConfig Shoulder_config = {
 
 TimerConfig DC_config = {
     .timer = LEDC_TIMER_2,
-    .frequency = 4000,
+    .frequency = 100,
     .bit_resolution = LEDC_TIMER_14_BIT,
     .mode = LEDC_HIGH_SPEED_MODE};
 
@@ -141,15 +141,15 @@ uint8_t B_pins[2] = {32, 33}; // dir, step
 uint8_t S_pins[2] = {25, 26}; // dir, step
 
 // DC pins
-uint8_t E_pins[2] = {27, 13}; //white,red
+uint8_t E_pins[2] = {18, 19}; //white,red
 uint8_t quad_E_pins[2] = {36, 39}; //VP, VN //green, yellow
 
-uint8_t W_pins[2] = {18, 19}; //white,red
-uint8_t quad_W_pins[2] = {34, 23}; //yellow, green
+uint8_t W_pins[2] = {27, 13}; //white,red
+uint8_t quad_W_pins[2] = {34, 35}; //yellow, green
 
 uint8_t G_pins = 4;
 // Limit switch pin
-uint8_t LS_pin = 35;
+uint8_t LS_pin = 23;
 #pragma endregion
 
 #pragma region Channel defines
@@ -168,6 +168,7 @@ const float DpE_Elbow = 0.36437f;
 const float DpE_Wrist = 0.36437f;
 float speed_DC[2] = {0.0,0.0};
 float angle_DC[2] = {0.0,0.0};
+float max_DC_freq[2] = {90.0f,100.0f}; //Elbow, Wrist
 #pragma endregion
 
 #pragma region Stepper variables
@@ -204,7 +205,8 @@ float set_ref = 0.0;
 
 float PID_B_gains[3] = {30.0, 0.0, 0.0}; //no encoder
 float PID_S_gains[3] = {12.5, 0.0, 0.0}; //mag encoder
-float PID_DC_gains[3] = {1.025f, 0.0f, 0.0};  
+float PID_E_gains[3] = {1.2f, 0.0f, 0.0};  
+float PID_W_gains[3] = {1.81f, 0.0f, 0.0};  
 uint64_t PID_us     = 10000;
 #pragma endregion
 
@@ -213,7 +215,7 @@ uint64_t PID_us     = 10000;
 //--------------------------
 #pragma region Time Polling defines
 uint64_t prev = 0, current = 0;
-uint64_t dt_us = 1000; // 1ms
+uint64_t dt_us = 10000; // 1ms
 #pragma endregion
 
 #endif // __DEFINITIONS_H__

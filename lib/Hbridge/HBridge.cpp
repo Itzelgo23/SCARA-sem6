@@ -13,10 +13,12 @@ HBridge::~HBridge()
 };
 
 
-void HBridge::setup(uint8_t pins[2], uint8_t channel[2],TimerConfig *config)
+void HBridge::setup(uint8_t pins[2], uint8_t channel[2],TimerConfig *config, float max_freq)
 {
    pwm[0].setup(pins[0],channel[0],config);
    pwm[1].setup(pins[1],channel[1],config);
+
+   _maxfreq = max_freq;
 
    /*    if (duty_offset > 0.001)
     {
@@ -30,6 +32,13 @@ void HBridge::setup(uint8_t pins[2], uint8_t channel[2],TimerConfig *config)
 
 void HBridge::setSpeed(float duty)
 {
+    if (duty > _maxfreq)
+        duty    = _maxfreq;
+    else if (duty < -_maxfreq)
+        duty = -_maxfreq;
+    else
+        duty = duty;
+
     if(duty<0){
         pwm[0].setDuty(-duty);
         pwm[1].setDuty(0);
