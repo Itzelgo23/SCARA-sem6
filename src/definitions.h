@@ -13,6 +13,9 @@
 #include <HBridge.h>
 #include <SimpleUART.h>
 #include <ServoStepper.h>
+
+
+
 // UART2 RX 16 y TX 17
 // Wrist and Gripper in second (SLAVE) ESP32
 
@@ -164,17 +167,17 @@ uint8_t G_ch[2] = {6, 7};
 // Motor and control variables
 //--------------------------
 #pragma region DC variables
-const float DpE_Elbow = 0.36437f;
-const float DpE_Wrist = 0.36437f;
+const float DpE_Elbow = 0.36437f*2.2f; //degrees per edge, 2.3 is the gear ratio
+const float DpE_Wrist = 0.257142857f;
 float speed_DC[2] = {0.0,0.0};
 float angle_DC[2] = {0.0,0.0};
-float max_DC_freq[2] = {90.0f,100.0f}; //Elbow, Wrist
+float max_DC_freq[2] = {80.0f,99.0f}; //Elbow, Wrist
 #pragma endregion
 
 #pragma region Stepper variables
 //0.42A when shoulder moves, 0.31A when not moving.
 const float step_angle = 1.8f;
-float max_freq[2] = {1000.0f,50.0f}; //base, shoulder
+float max_freq[2] = {1000.0f,200.0f}; //base, shoulder
 float speed_S[2] = {0.0,0.0};
 float angle_S[2] = {0.0,0.0};
 float home_freq;
@@ -205,9 +208,9 @@ float set_ref = 0.0;
 
 float PID_B_gains[3] = {30.0, 0.0, 0.0}; //no encoder
 float PID_S_gains[3] = {12.5, 0.0, 0.0}; //mag encoder
-float PID_E_gains[3] = {1.2f, 0.0f, 0.0};  
-float PID_W_gains[3] = {1.81f, 0.0f, 0.0};  
-uint64_t PID_us     = 10000;
+float PID_E_gains[3] = {1.0, 0.0, 0.0};  
+float PID_W_gains[3] = {3.0, 0.0, 0.0};  
+uint64_t PID_us     = 1000;
 #pragma endregion
 
 //--------------------------
