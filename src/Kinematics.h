@@ -104,6 +104,17 @@ void getFK(float lengths[3], float d1, float q2, float q3, float q4, float (&T_f
         {q4, 0.0, 0.0, 0.0}  // R
     };
 
+
+    // theta, d, alpha, r
+    //Correct dh model, have to change code.
+    /*
+        {q1, d1, 0.0, 0.0}, // Shoulder
+        {0.0, d2, 0.0, 0.0},   // Base
+        {q2, 0.0, 0.0, L1},  // Elbow
+        {q3, -b1, 0.0, L2},  // Wrist
+        {0.0, -b2, 0.0, 0.0}  //Gripper
+        */
+
     float I[4][4] = {
         {1, 0, 0, 0},
         {0, 1, 0, 0},
