@@ -88,32 +88,24 @@ void rotm2eul(float T[4][4], float (&euler)[3])
     euler[0] *= rad2deg;
 }
 
-void getFK(float lengths[3], float d1, float q2, float q3, float q4, float (&T_final)[4][4], float (&euler)[3])
+void getFK(float lengths[5], float d2, float q1, float q3, float q4, float (&T_final)[4][4], float (&euler)[3])
 {
     // SCARA dimensions
-    float A0 = lengths[0]; // height base
-    float A1 = lengths[1]; // arm1
-    float A2 = lengths[2]; // arm2
+    float d1 = lengths[0]; // height base
+    float L1 = lengths[1]; // arm1
+    float L2 = lengths[2]; // arm2
+    float b1 = lengths[3]; // height between arms
+    float b2 = lengths[4]; // height gripper
 
     // dh parameters
-    float dh[4][4] = {
-        // theta, d, alpha, r
-        {0.0, d1, 0.0, 0.0}, // P
-        {q2, A0, 0.0, A1},   // R
-        {q3, 0.0, 0.0, A2},  // R
-        {q4, 0.0, 0.0, 0.0}  // R
-    };
-
-
+    float dh[5][4] = {
     // theta, d, alpha, r
-    //Correct dh model, have to change code.
-    /*
-        {q1, d1, 0.0, 0.0}, // Shoulder
-        {0.0, d2, 0.0, 0.0},   // Base
-        {q2, 0.0, 0.0, L1},  // Elbow
-        {q3, -b1, 0.0, L2},  // Wrist
-        {0.0, -b2, 0.0, 0.0}  //Gripper
-        */
+        {q1, d1, 0.0, 0.0}, // Shoulder -- rotation and preestablished height to base
+        {0.0, d2, 0.0, 0.0},   // Base -- prismatic
+        {q3, 0.0, 0.0, L1},  // Elbow -- rotation and arm length
+        {q4, -b1, 0.0, L2},  // Wrist -- rotation, height between arms and arm length
+        {0.0, -b2, 0.0, 0.0}  //Gripper -- no movement, just height from arm to gripper
+    };
 
     float I[4][4] = {
         {1, 0, 0, 0},
@@ -123,7 +115,7 @@ void getFK(float lengths[3], float d1, float q2, float q3, float q4, float (&T_f
     std::copy(&I[0][0], &I[0][0] + 16, &T_final[0][0]);
 
     float H_temp[4][4];
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < 5; i++)
     {
         getHM(dh[i], H_temp);
         multiplyMatrices(T_final, H_temp, T_final);
@@ -173,8 +165,59 @@ void getIK(float op_vars[4], float DH_parameters[2][4], float &num_solutions, fl
     num_solutions = 2; // Two solutions
 }
 
-void findBestSolution(float solutions[2][4], float DH_parameters[2][4], float &index)
-{
-    // calculate angle differences for each solution and find the one with the smallest total difference
-    // give the most importance to the base as it is the slowest to move, then shoulder, elbow and wrist
+void findBestSolution(float solutions[2][4], float current[4],int &index)
+{  
+     //solutions[2][4] from getIK, current[4] from getFK, index is the output for the best solution
+
+    /*calculate angle differences for each solution and find the one with the smallest total difference
+    give the most importance to the base as it is the slowest to move, then shoulder, elbow and wrist
+
+    Elbow cannot move more than around 130° (if 0 is paralell to system)
+    Maybe Shoulder cannot turn more than 270°? -- wire control, faster movement
+    Base cannot move less than 0 and more than cm2deg(15) //cm
+    */
+
+    float weights[4] = {4.0, 10.0, 2.0, 1.0};//Base, Shoulder, Elbow, Wrist
+
+    float bestCost = 1e9;
+    index = -1;
+
+    for (int i = 0; i < 2; i++)
+    {
+        float d0 = fabs(solutions[i][0] - current[0]);
+        float d1 = fabs(solutions[i][1] - current[1]);
+        float d2 = fabs(solutions[i][2] - current[2]);
+        float d3 = fabs(solutions[i][3] - current[3]);
+
+        // ===== JOINT LIMITS =====
+        // base prismatic
+        if (solutions[i][0] < 0.0 || solutions[i][0] > 6750.0) // 15cm in ° for a picth of 8mm
+            //error state, return without setting index to ensure no movement
+            continue;
+
+        // elbow ±130°
+        if (fabs(solutions[i][2]) > 130.0)
+            //error state, return without setting index to ensure no movement
+            continue;
+
+        // shoulder example ±135°
+        if (fabs(solutions[i][1]) > 135.0)
+            //error state, return without setting index to ensure no movement
+            continue;
+
+        //finds best solution based on weighted distance to current position, giving more importance to shoulder and base
+
+        float cost =
+            weights[0] * d0 +
+            weights[1] * d1 +
+            weights[2] * d2 +
+            weights[3] * d3;
+
+        if (cost < bestCost)
+        {
+            bestCost = cost;
+            index = i;
+            //returns index between 0 and 1 for the best solution, -1 if no valid solution
+        }
+    }
 }
