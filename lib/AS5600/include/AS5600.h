@@ -80,7 +80,7 @@ private:
 #pragma region Quadrant detection variables
     int quadrant;      // 1,2,3,4
     int prev_Quadrant; // 1,2,3,4
-    float number_of_turns = 0;
+    float number_of_turns = 0.0;
 #pragma endregion
 };
 

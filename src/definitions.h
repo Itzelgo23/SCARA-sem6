@@ -127,7 +127,7 @@ SimpleUART uart(115200);
 
 #pragma region UART varaibles
 char buffer_in[32];
-static int index = 0;
+static int uart_index = 0;
 #pragma endregion
 //--------------------------
 // Pin and channel definitions
@@ -168,13 +168,13 @@ const float DpE_Elbow = 0.36437f;
 const float DpE_Wrist = 0.36437f;
 float speed_DC[2] = {0.0,0.0};
 float angle_DC[2] = {0.0,0.0};
-float max_DC_freq[2] = {90.0f,100.0f}; //Elbow, Wrist
+float max_DC_freq[2] = {90.0f,99.0f}; //Elbow, Wrist
 #pragma endregion
 
 #pragma region Stepper variables
 //0.42A when shoulder moves, 0.31A when not moving.
 const float step_angle = 1.8f;
-float max_freq[2] = {1000.0f,50.0f}; //base, shoulder
+float max_freq[2] = {1000.0f,4000.0f}; //base, shoulder
 float speed_S[2] = {0.0,0.0};
 float angle_S[2] = {0.0,0.0};
 float home_freq;
@@ -204,11 +204,26 @@ float ref[4] = {0.0, 0.0, 0.0, 0.0};
 float set_ref = 0.0;
 
 float PID_B_gains[3] = {30.0, 0.0, 0.0}; //no encoder
-float PID_S_gains[3] = {12.5, 0.0, 0.0}; //mag encoder
-float PID_E_gains[3] = {1.2f, 0.0f, 0.0};  
-float PID_W_gains[3] = {1.81f, 0.0f, 0.0};  
+float PID_S_gains[3] = {15.0, 0.0, 0.0}; //mag encoder
+float PID_E_gains[3] = {1.2, 0.0, 0.0};  
+float PID_W_gains[3] = {10.0, 0.0, 0.0};  
 uint64_t PID_us     = 10000;
 #pragma endregion
+
+//--------------------------
+//      Kinematics variables
+//--------------------------
+#pragma region Kinematics defines
+float x, y, z, tool_angle;
+float _L1, _L2, _p, _gamma, _alpha, _beta;
+float sol[2][4] = {0};
+float T_final[4][4] = {0};
+float _t, _d, _a, _r;
+float lengths[3] = {0.0, 0.0, 0.0}; // height base, arm1, arm2
+float height;
+float euler[3] = {0.0, 0.0, 0.0}; // yaw, pitch, roll
+
+#pragma endregion|
 
 //--------------------------
 // Time polling variables

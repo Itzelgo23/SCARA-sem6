@@ -3,6 +3,7 @@
 #include "MoveHome.h"
 #include "MagnetDetection.h"
 #include "cm2deg.h"
+#include "Kinematics.h"
 
 static void IRAM_ATTR
 interrupt_AS5600(void *arg)
@@ -95,7 +96,9 @@ extern "C" void app_main()
 
                     PIDmotors(ref[1], Shoulder, control[1], error[1], angle_S[1], speed_S[1]);
                     Shoulder_Motor.set(control[1], error[1]);
-                    printf("ref: %.2f | angle: %.2f | control: %.2f | error: %.2f\n", ref[1], angle_S[1], control[1], error[1]);
+                    height = deg2cm(Base_Motor.getAngle(),8.0f);
+                    getFK(lengths,height, magE.getTotalAngle(), quadE[0].getAngle(), quadE[1].getAngle(), T_final, euler);
+                    //printf("ref: %.2f | angle: %.2f | control: %.2f | error: %.2f\n", ref[1], angle_S[1], control[1], error[1]);
                     break;
                 }
                 case Elbow: // DC1
@@ -124,7 +127,7 @@ extern "C" void app_main()
                     ref[3] = set_ref;
                     PIDmotors(ref[3], Wrist, control[3], error[3], angle_DC[1], speed_DC[1]);
                     Wrist_Motor.setSpeed(control[3]);
-                    printf("ref: %.2f | angle: %.2f | control: %.2f | error: %.2f\n", ref[3], angle_DC[1], control[3], error[3]);
+                    //printf("ref: %.2f | angle: %.2f | control: %.2f | error: %.2f\n", ref[3], angle_DC[1], control[3], error[3]);
                     break;
                 }
                 case Gripper:
@@ -188,21 +191,21 @@ extern "C" void app_main()
 
             if (c == '\n')
             {
-                buffer_in[index] = '\0';
+                buffer_in[uart_index] = '\0';
 
                 sscanf(buffer_in, "%d,%f,%f", &motor_tmp, &set_ref, &home_freq);
                 motor_case = (MotorTypes)motor_tmp;
-                index = 0;
+                uart_index = 0;
                 // printf("recibido: %s\n",buffer);
             }
-            else if (index < sizeof(buffer_in) - 1)
+            else if (uart_index < sizeof(buffer_in) - 1)
             {
-                buffer_in[index++] = c;
+                buffer_in[uart_index++] = c;
                 // printf("elseif:\n");
             }
             else
             {
-                index = 0;
+                uart_index = 0;
                 // printf("overflow \n");
             }
         }

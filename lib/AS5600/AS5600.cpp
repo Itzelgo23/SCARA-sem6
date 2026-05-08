@@ -73,8 +73,9 @@ uint8_t AS5600::MagnetDetection()
 
 void AS5600::correctAngle() //-15 --> 345
 {
-    corrected_Angle = (degAngle - start_Angle);
-    if (corrected_Angle < 0)
+    //corrected_Angle = (degAngle - start_Angle);
+    corrected_Angle = degAngle;
+    if (corrected_Angle < -0.2f)
     {
         corrected_Angle = corrected_Angle + 360;
     }
@@ -114,15 +115,15 @@ uint16_t AS5600::readRawAngle()
     read16(RAW_ANGLE, rawAngle);
     degAngle = (rawAngle * 360.0) / resolution;
 
-    //correctAngle();
-    //quadrantAngle();
+    correctAngle();
+    quadrantAngle();
 
     return rawAngle;
 }
 
 float AS5600::getTotalAngle()
 {
-    float current = degAngle; // 0–360
+    /*float current = degAngle; // 0–360
 
     if (first_read)
     {
@@ -150,11 +151,12 @@ float AS5600::getTotalAngle()
 
     prev_raw_angle = current;
     current_Angle = totalAngle;
-    /*
+    */
+    //totalAngle = corrected_Angle;
     totalAngle = corrected_Angle + (number_of_turns * 360); 
     current_Angle = totalAngle; 
     return totalAngle;
-    */
+    
 
     return totalAngle;
 }
