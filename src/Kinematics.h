@@ -98,10 +98,10 @@ void getFK(float lengths[5], float d2, float q1, float q3, float q4, float (&T_f
     float b2 = lengths[4]; // height gripper
 
     // dh parameters
-    float dh[5][4] = {
+            //Change to this to ignore prismatic and control individually
+    float dh[4][4] = {
     // theta, d, alpha, r
         {q1, d1, 0.0, 0.0}, // Shoulder -- rotation and preestablished height to base
-        {0.0, d2, 0.0, 0.0},   // Base -- prismatic
         {q3, 0.0, 0.0, L1},  // Elbow -- rotation and arm length
         {q4, -b1, 0.0, L2},  // Wrist -- rotation, height between arms and arm length
         {0.0, -b2, 0.0, 0.0}  //Gripper -- no movement, just height from arm to gripper
@@ -115,7 +115,7 @@ void getFK(float lengths[5], float d2, float q1, float q3, float q4, float (&T_f
     std::copy(&I[0][0], &I[0][0] + 16, &T_final[0][0]);
 
     float H_temp[4][4];
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < 4; i++)
     {
         getHM(dh[i], H_temp);
         multiplyMatrices(T_final, H_temp, T_final);
@@ -123,17 +123,16 @@ void getFK(float lengths[5], float d2, float q1, float q3, float q4, float (&T_f
     rotm2eul(T_final, euler);
 }
 
-void getIK(float op_vars[4], float DH_parameters[2][4], float &num_solutions, float (&solutions)[2][4])
+void getIK(float op_vars[3], float L1, float L2, int &num_solutions, float (&solutions)[2][3])
 {
     std::memset(solutions, 0, sizeof(solutions));
 
     x = op_vars[0];
     y = op_vars[1];
-    z = op_vars[2];
-    tool_angle = op_vars[3];
+    tool_angle = op_vars[2];
 
-    _L1 = DH_parameters[0][3];
-    _L2 = DH_parameters[1][3];
+    _L1 = L1;
+    _L2 = L2;
 
     _p = sqrt((_L1 * _L1) + (_L2 * _L2));
 
@@ -147,10 +146,10 @@ void getIK(float op_vars[4], float DH_parameters[2][4], float &num_solutions, fl
     _alpha = acos((_L1 * _L1 + _p * _p - _L2 * _L2) / (2 * _L1 * _p));
     _beta = acos((_L1 * _L1 + _L2 * _L2 - _p * _p) / (2 * _L1 * _L2));
 
-    solutions[0][0] = z;
-    solutions[0][1] = Rad2Deg(_gamma - _alpha);
-    solutions[0][2] = Rad2Deg(M_PI - _beta);
-    solutions[0][3] = tool_angle - solutions[0][1] - solutions[0][2];
+    //solutions[0][0] = z;
+    solutions[0][0] = Rad2Deg(_gamma - _alpha);
+    solutions[0][1] = Rad2Deg(M_PI - _beta);
+    solutions[0][2] = tool_angle - solutions[0][1] - solutions[0][2];
 
     if (_p == _L1 + _L2 || _p == fabs(_L1 - _L2))
     {
@@ -158,16 +157,17 @@ void getIK(float op_vars[4], float DH_parameters[2][4], float &num_solutions, fl
         return;
     }
 
-    solutions[1][0] = z;
-    solutions[1][1] = Rad2Deg(_gamma + _alpha);
-    solutions[1][2] = Rad2Deg(_beta - M_PI);
-    solutions[1][3] = tool_angle - solutions[1][1] - solutions[1][2];
+    //solutions[1][0] = z;
+    solutions[1][0] = Rad2Deg(_gamma + _alpha); //shoulder
+    solutions[1][1] = Rad2Deg(_beta - M_PI); //elbow
+    solutions[1][2] = tool_angle - solutions[1][1] - solutions[1][2]; //wrist
     num_solutions = 2; // Two solutions
+
 }
 
-void findBestSolution(float solutions[2][4], float current[4],int &index)
+void findBestSolution(float solutions[2][3], float current[3],int &index)
 {  
-     //solutions[2][4] from getIK, current[4] from getFK, index is the output for the best solution
+     //solutions[2][3] from getIK, current[3] from getFK, index is the output for the best solution
 
     /*calculate angle differences for each solution and find the one with the smallest total difference
     give the most importance to the base as it is the slowest to move, then shoulder, elbow and wrist
@@ -177,7 +177,7 @@ void findBestSolution(float solutions[2][4], float current[4],int &index)
     Base cannot move less than 0 and more than cm2deg(15) //cm
     */
 
-    float weights[4] = {4.0, 10.0, 2.0, 1.0};//Base, Shoulder, Elbow, Wrist
+    float weights[3] = {10.0, 2.0, 1.0};//Shoulder, Elbow, Wrist
 
     float bestCost = 1e9;
     index = -1;
@@ -187,21 +187,16 @@ void findBestSolution(float solutions[2][4], float current[4],int &index)
         float d0 = fabs(solutions[i][0] - current[0]);
         float d1 = fabs(solutions[i][1] - current[1]);
         float d2 = fabs(solutions[i][2] - current[2]);
-        float d3 = fabs(solutions[i][3] - current[3]);
 
         // ===== JOINT LIMITS =====
-        // base prismatic
-        if (solutions[i][0] < 0.0 || solutions[i][0] > 6750.0) // 15cm in ° for a picth of 8mm
-            //error state, return without setting index to ensure no movement
-            continue;
 
         // elbow ±130°
-        if (fabs(solutions[i][2]) > 130.0)
+        if (fabs(solutions[i][1]) > 130.0)
             //error state, return without setting index to ensure no movement
             continue;
 
         // shoulder example ±135°
-        if (fabs(solutions[i][1]) > 135.0)
+        if (fabs(solutions[i][0]) > 135.0)
             //error state, return without setting index to ensure no movement
             continue;
 
@@ -210,8 +205,7 @@ void findBestSolution(float solutions[2][4], float current[4],int &index)
         float cost =
             weights[0] * d0 +
             weights[1] * d1 +
-            weights[2] * d2 +
-            weights[3] * d3;
+            weights[2] * d2 ;
 
         if (cost < bestCost)
         {

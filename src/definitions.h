@@ -39,6 +39,17 @@ enum MagStatus
 };
 MagStatus status = Detection;
 
+enum RobotState
+{
+    Init = 0,
+    JointJog = 1,
+    Coordinates = 2,
+    PID_control = 3,
+    PickPlace = 4,
+    Home = 5
+};
+RobotState robot_state = Init;
+
 enum MotorTypes
 {
     Initial = 0,
@@ -46,8 +57,7 @@ enum MotorTypes
     Shoulder = 2, // Stepper2
     Elbow = 3,    // DC1
     Wrist = 4,    // DC2
-    Gripper = 5,
-    Home = 6
+    Gripper = 5
 };
 MotorTypes motor_case = Initial;
 
@@ -111,12 +121,14 @@ AS5600 magE;
 QuadratureEncoder quadE[2];
 PID pid[4];
 
+
 // Motors
 ServoStepper Base_Motor; //up and down
 Stepper Shoulder_Motor; //left and right
 HBridge Elbow_Motor; //left and right
 HBridge Wrist_Motor; //left and right
-HBridge Air_pump;
+//HBridge Gripper_Motor; //on off
+SimpleGPIO Gripper_Motor; // on off, using GPIO to control relay for air pump
 
 // Limit switch sensor
 SimpleGPIO LimitSwitch;
@@ -128,6 +140,10 @@ SimpleUART uart(115200);
 #pragma region UART varaibles
 char buffer_in[32];
 static int uart_index = 0;
+float set_ref1 = 0.0;
+float set_ref2 = 0.0;
+float set_ref3 = 0.0;
+float set_ref4 = 0.0;
 #pragma endregion
 //--------------------------
 // Pin and channel definitions
@@ -201,7 +217,6 @@ float prev_error[4] = {0.0, 0.0, 0.0, 0.0};
 float control[4];
 
 float ref[4] = {0.0, 0.0, 0.0, 0.0};
-float set_ref = 0.0;
 
 float PID_B_gains[3] = {30.0, 0.0, 0.0}; //no encoder
 float PID_S_gains[3] = {15.0, 0.0, 0.0}; //mag encoder
@@ -219,11 +234,24 @@ float _L1, _L2, _p, _gamma, _alpha, _beta;
 float sol[2][4] = {0};
 float T_final[4][4] = {0};
 float _t, _d, _a, _r;
-float lengths[3] = {0.0, 0.0, 0.0}; // height base, arm1, arm2
+float lengths[5] = {0.0, 0.0, 0.0, 0.0, 0.0}; // height base, arm1, arm2, height between arms, height gripper
 float height;
 float euler[3] = {0.0, 0.0, 0.0}; // yaw, pitch, roll
+float location[3] = {0.0, 0.0, 0.0}; // x,y,wrist angle
+int num_solutions = 0;
+float solutions[2][3] = {0}; // 2 solutions, 3 variables (shoulder, elbow, wrist)
+float L1 = 0.0, L2 = 0.0;
 
-#pragma endregion|
+#pragma endregion
+
+#pragma region Pick and Place variables
+bool Pick_done = false;
+bool Place_done = false;
+float Place1[3] = {10.0f, 10.0f, 0.0f}; // x,y,wrist angle
+float Place2[3] = {15.0f, 15.0f, 0.0f}; // x,y,wrist angle
+float Place3[3] = {5.0f, 5.0f, 0.0f}; // x,y,wrist angle
+float Place4[3] = {20.0f, 5.0f, 0.0f}; // x,y,wrist angle
+#pragma endregion
 
 //--------------------------
 // Time polling variables
