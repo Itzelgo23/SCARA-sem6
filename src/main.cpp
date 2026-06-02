@@ -417,6 +417,9 @@ extern "C" void app_main()
                 Gripper_Motor.set(0);
                 break;
             }
+            getFK(lengths, height, magE.getTotalAngle(), quadE[0].getAngle(), quadE[1].getAngle(), T_final, euler);
+            send_message = sprintf(message, "%d,%d,%.2f,%.2f,%.2f,%.2f\n", Pick_done, Place_done, angle_S[1], angle_DC[0], angle_DC[1],euler[0],euler[1],deg2cm(angle_S[0], 8.0f));
+            uart.write(message, send_message);
             /*int len = uart.available();
             if (len)
             {

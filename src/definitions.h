@@ -57,7 +57,8 @@ enum MotorTypes
     Shoulder = 2, // Stepper2
     Elbow = 3,    // DC1
     Wrist = 4,    // DC2
-    Gripper = 5
+    Gripper = 5,
+    Inverse = 6
 };
 MotorTypes motor_case = Initial;
 
@@ -144,6 +145,8 @@ float set_ref1 = 0.0;
 float set_ref2 = 0.0;
 float set_ref3 = 0.0;
 float set_ref4 = 0.0;
+uint32_t send_message;
+char message[64];
 #pragma endregion
 //--------------------------
 // Pin and channel definitions
