@@ -178,19 +178,25 @@ extern "C" void app_main()
                         Gripper_Motor.set(1);
                         break;
                     }
-
+                    case Forward:
+                    {
+                        getFK(lengths, height, magE.getTotalAngle(), quadE[0].getAngle(), quadE[1].getAngle(), T_final, euler);
+                        printf("End Effector Position: x=%.2f | y=%.2f | orientation=%.2f \n", euler[0], euler[1], euler[2]);
+                        break;
+                    }
                     case Inverse:
                     {
                         location[0]=set_ref1;
                         location[1]=set_ref2;
                         location[2]=set_ref3;
+                        printf("Target Position: x=%.2f | y=%.2f | orientation=%.2f \n", location[0], location[1], location[2]);
                         getIK(location, L1, L2, num_solutions, solutions);
                         PIDmotors(solutions[0][0], Shoulder, control[1], error[1], angle_S[1], speed_S[1]);
                         PIDmotors(solutions[0][1], Elbow, control[2], error[2], angle_DC[0], speed_DC[0]);
                         PIDmotors(solutions[0][2], Wrist, control[3], error[3], angle_DC[1], speed_DC[1]);
                         if (fabs(error[1]) < 5.0f && fabs(error[2]) < 5.0f && fabs(error[3]) < 5.0f)
                         {
-                            printf("Inverse kinematics solution reached\n");
+                            printf("Inverse kinematics solution reached\n"); 
                         }
                         break;
                     }

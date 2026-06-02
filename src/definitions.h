@@ -58,7 +58,8 @@ enum MotorTypes
     Elbow = 3,    // DC1
     Wrist = 4,    // DC2
     Gripper = 5,
-    Inverse = 6
+    Forward = 6,
+    Inverse = 7
 };
 MotorTypes motor_case = Initial;
 
