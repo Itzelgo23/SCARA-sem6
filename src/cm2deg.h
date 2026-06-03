@@ -1,3 +1,5 @@
+#ifndef CM2DEG_H
+#define CM2DEG_H
 #include "definitions.h"
 
 float cm2deg(float cm, float pitch) {
@@ -9,3 +11,5 @@ float deg2cm(float deg, float pitch) {
     float mm = (deg / 360.0) * pitch;
     return mm / 10.0;
 }
+
+#endif // CM2DEG_H

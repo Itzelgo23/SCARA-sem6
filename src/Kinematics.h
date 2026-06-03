@@ -1,3 +1,5 @@
+#ifndef KINAMATICS_H
+#define KINAMATICS_H
 #include "definitions.h"
 #include "cstring"
 #include "cmath"
@@ -216,3 +218,5 @@ void findBestSolution(float solutions[2][3], float current[3],int &index)
         }
     }
 }
+
+#endif // KINAMATICS_H

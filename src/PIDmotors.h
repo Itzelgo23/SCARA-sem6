@@ -1,3 +1,6 @@
+#ifndef PIDMOTORS_H
+#define PIDMOTORS_H
+
 #include "definitions.h"
 
 void PIDmotors(float move_ref, uint8_t robot_section, float &control_out, float &error_out, float &measurement_out, float &speed_out)
@@ -58,3 +61,5 @@ void PIDmotors(float move_ref, uint8_t robot_section, float &control_out, float 
 
     prev_error[i] = error_out;
 }
+
+#endif // PIDMOTORS_H

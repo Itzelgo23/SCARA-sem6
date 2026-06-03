@@ -140,14 +140,14 @@ SimpleUART uart(115200);
 #pragma endregion
 
 #pragma region UART varaibles
-char buffer_in[32];
+char buffer_in[128];
 static int uart_index = 0;
 float set_ref1 = 0.0;
 float set_ref2 = 0.0;
 float set_ref3 = 0.0;
 float set_ref4 = 0.0;
 uint32_t send_message;
-char message[64];
+char message[128];
 #pragma endregion
 //--------------------------
 // Pin and channel definitions
@@ -185,7 +185,7 @@ uint8_t G_ch[2] = {6, 7};
 //--------------------------
 #pragma region DC variables
 const float DpE_Elbow = 0.36437f;
-const float DpE_Wrist = 0.36437f;
+const float DpE_Wrist = 0.257142857f;
 float speed_DC[2] = {0.0,0.0};
 float angle_DC[2] = {0.0,0.0};
 float max_DC_freq[2] = {90.0f,99.0f}; //Elbow, Wrist
@@ -262,7 +262,7 @@ float Place4[3] = {20.0f, 5.0f, 0.0f}; // x,y,wrist angle
 //--------------------------
 #pragma region Time Polling defines
 uint64_t prev = 0, current = 0;
-uint64_t dt_us = 10000; // 1ms
+uint64_t dt_us = 10000; // 10ms
 #pragma endregion
 
 #endif // __DEFINITIONS_H__

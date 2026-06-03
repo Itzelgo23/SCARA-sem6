@@ -1,3 +1,5 @@
+#ifndef MAGNETDETECTION_H
+#define MAGNETDETECTION_H
 #include "definitions.h"
 
 MagStatus DetectMagnet(MotorTypes &state_in, MotorTypes &state_out)
@@ -11,3 +13,5 @@ MagStatus DetectMagnet(MotorTypes &state_in, MotorTypes &state_out)
     else
         return Error;
 }
+
+#endif // MAGNETDETECTION_H

@@ -55,6 +55,7 @@ extern "C" void app_main()
                 {
                 case Init:
                 {
+                    printf("Initialization Mode\n");
                     break;
                 }
                 case JointJog:
@@ -123,26 +124,28 @@ extern "C" void app_main()
                     }
                     case Elbow: // DC1
                     {
-                        if (set_ref1 != 1.2f)
+                        /*if (set_ref1 != 1.2f)
                             set_ref1 = 1.2f;
                         if (set_ref2 != 0.0f)
                             set_ref2 = 0.0f;
                         if (set_ref3 != 0.0f)
                             set_ref3 = 0.0f;
+                            */
                         Base_Motor.setSpeed(0);
                         Shoulder_Motor.setSpeed(0);
                         Wrist_Motor.setSpeed(0);
                         Gripper_Motor.set(0);
 
-                        PID_E_gains[0] = set_ref1;
+                        /*PID_E_gains[0] = set_ref1;
                         PID_E_gains[1] = set_ref2;
                         PID_E_gains[2] = set_ref3;
+                        */
                         ref[2] = set_ref4;
                         PIDmotors(ref[2], Elbow, control[2], error[2], angle_DC[0], speed_DC[0]);
-                        Elbow_Motor.setSpeed(control[2]);
-                        printf("ref: %.2f | angle: %.2f | control: %.2f | error: %.2f\n", ref[2], angle_DC[0], control[2], error[2]);
+                        //Elbow_Motor.setSpeed(control[2]);
+                        printf("Elbow -- ref: %.2f | angle: %.2f | control: %.2f | error: %.2f\n", ref[2], angle_DC[0], control[2], error[2]);
                         // printf("%.2f,%.2f,%d\n", angle_DC[0], speed_DC[0], current);
-                        // Elbow_Motor.setSpeed(ref[2]);
+                        Elbow_Motor.setSpeed(ref[2]);
                         // printf("%.2f,%.2f,%d\n",quadE[0].getAngle(),quadE[0].getSpeed(),current);
                         break;
                     }
@@ -170,6 +173,7 @@ extern "C" void app_main()
                     }
                     case Gripper:
                     {
+                        printf("Activating gripper\n");
                         Base_Motor.setSpeed(0);
                         Shoulder_Motor.setSpeed(0);
                         Elbow_Motor.setSpeed(0);
@@ -219,6 +223,7 @@ extern "C" void app_main()
 
                 case PID_control:
                 {
+                    printf("PID Control Mode\n");
                     switch (motor_case)
                     {
                     case Initial:
@@ -236,7 +241,7 @@ extern "C" void app_main()
                     case Base: // Stepper1
                     {
                         Shoulder_Motor.setSpeed(0);
-                        Elbow_Motor.setSpeed(0);
+                        //Elbow_Motor.setSpeed(0);
                         Wrist_Motor.setSpeed(0);
                         Gripper_Motor.set(0);
 
@@ -254,7 +259,7 @@ extern "C" void app_main()
                     case Shoulder: // Stepper2
                     {
                         Base_Motor.setSpeed(0);
-                        Elbow_Motor.setSpeed(0);
+                        //Elbow_Motor.setSpeed(0);
                         Wrist_Motor.setSpeed(0);
                         Gripper_Motor.set(0);
 
@@ -292,7 +297,7 @@ extern "C" void app_main()
                     {
                         Base_Motor.setSpeed(0);
                         Shoulder_Motor.setSpeed(0);
-                        Elbow_Motor.setSpeed(0);
+                        //Elbow_Motor.setSpeed(0);
                         Gripper_Motor.set(0);
 
                         PID_W_gains[0] = set_ref1;
@@ -306,9 +311,10 @@ extern "C" void app_main()
                     }
                     case Gripper:
                     {
+                        printf("Activating gripper\n");
                         Base_Motor.setSpeed(0);
                         Shoulder_Motor.setSpeed(0);
-                        Elbow_Motor.setSpeed(0);
+                        //Elbow_Motor.setSpeed(0);
                         Wrist_Motor.setSpeed(0);
 
                         Gripper_Motor.set(1);
@@ -317,7 +323,7 @@ extern "C" void app_main()
                     default:
                         break;
                     }
-                    break;
+                    
                     break;
                 }
 
@@ -409,7 +415,7 @@ extern "C" void app_main()
                     {
                         printf("Home position reached\n");
                         // Add for motor to retract 10 steps to ensure it's off the limit switch
-                        motor_case = Init; // Reset to initial after homing
+                        robot_state = Init; // Reset to initial after homing
                     }
                     break;
                 }
@@ -418,14 +424,15 @@ extern "C" void app_main()
             case Error:
                 Base_Motor.setSpeed(0);
                 Shoulder_Motor.setSpeed(0);
-                Elbow_Motor.setSpeed(0);
+                //Elbow_Motor.setSpeed(0);
                 Wrist_Motor.setSpeed(0);
                 Gripper_Motor.set(0);
                 break;
             }
-            getFK(lengths, height, magE.getTotalAngle(), quadE[0].getAngle(), quadE[1].getAngle(), T_final, euler);
-            send_message = sprintf(message, "%d,%d,%.2f,%.2f,%.2f,%.2f\n", Pick_done, Place_done, angle_S[1], angle_DC[0], angle_DC[1],euler[0],euler[1],deg2cm(angle_S[0], 8.0f));
-            uart.write(message, send_message);
+            //getFK(lengths, height, magE.getTotalAngle(), quadE[0].getAngle(), quadE[1].getAngle(), T_final, euler);
+            
+            //send_message = sprintf(message, "%d,%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n", Pick_done, Place_done, angle_S[1], angle_DC[0], angle_DC[1],euler[0],euler[1],deg2cm(angle_S[0], 8.0f));
+            //uart.write(message, send_message);
             /*int len = uart.available();
             if (len)
             {
@@ -454,7 +461,7 @@ extern "C" void app_main()
             {
                 buffer_in[uart_index] = '\0';
 
-                sscanf(buffer_in, "%d,%f,%f,%f,%f,%f", &robot_tmp, &motor_tmp, &set_ref1, &set_ref2, &set_ref3, &set_ref4);
+                sscanf(buffer_in, "%d,%d,%f,%f,%f,%f", &robot_tmp, &motor_tmp, &set_ref1, &set_ref2, &set_ref3, &set_ref4);
                 robot_state = (RobotState)robot_tmp;
                 motor_case = (MotorTypes)motor_tmp;
                 uart_index = 0;

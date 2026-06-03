@@ -1,3 +1,5 @@
+#ifndef MOVEHOME_H
+#define MOVEHOME_H
 #include "definitions.h"
 
 bool MoveHome(float home_freq)
@@ -21,3 +23,5 @@ bool MoveHome(float home_freq)
 
     return is_home;
 }
+
+#endif // MOVEHOME_H
