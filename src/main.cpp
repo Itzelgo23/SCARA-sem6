@@ -191,9 +191,9 @@ extern "C" void app_main()
                     }
                     case Forward:
                     {
-                        //getFK(lengths, Base_Motor.getAngle(), magE.getTotalAngle(), quadE[0].getAngle(), quadE[1].getAngle(), T_final, euler);
+                        // getFK(lengths, Base_Motor.getAngle(), magE.getTotalAngle(), quadE[0].getAngle(), quadE[1].getAngle(), T_final, euler);
                         getFK(lengths, 0, set_ref1, set_ref2, set_ref3, T_final, euler);
-                        printf("End Effector Position: x=%.2f | y=%.2f | orientation=%.2f \n", euler[0], euler[1], euler[2]);
+                        printf("x=%.2f y=%.2f phi=%.2f\n",T_final[0][3],T_final[1][3],euler[0]);
                         break;
                     }
                     case Inverse:
@@ -201,14 +201,15 @@ extern "C" void app_main()
                         location[0] = set_ref1;
                         location[1] = set_ref2;
                         location[2] = set_ref3;
-                        
+
                         getIK(location, L1, L2, num_solutions, solutions);
-                        PIDmotors(solutions[0][0], Shoulder, control[1], error[1], angle_S[1], speed_S[1]);
+                        printf("theta1 = %.2f\n", solutions[0][0]);
+                        // PIDmotors(solutions[0][0], Shoulder, control[1], error[1], angle_S[1], speed_S[1]);
                         PIDmotors(solutions[0][1], Elbow, control[2], error[2], angle_DC[0], speed_DC[0]);
                         PIDmotors(solutions[0][2], Wrist, control[3], error[3], angle_DC[1], speed_DC[1]);
                         printf("# solutions: %d | Target Position: theta1=%.2f | theta2=%.2f |theta3=%.2f,  \n", num_solutions, solutions[0][0], solutions[0][1], solutions[0][2]);
                         // Base_Motor.setSpeed(control[0]);
-                        Shoulder_Motor.setSpeed(control[1]);
+                        // Shoulder_Motor.setSpeed(control[1]);
                         Elbow_Motor.setSpeed(control[2]);
                         Wrist_Motor.setSpeed(control[3]);
                         Gripper_Motor.set(0);
