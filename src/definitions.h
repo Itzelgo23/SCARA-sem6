@@ -244,6 +244,9 @@ float euler[3] = {0.0, 0.0, 0.0}; // yaw, pitch, roll
 float location[3] = {0.0, 0.0, 0.0}; // x,y,wrist angle
 int num_solutions = 0;
 float solutions[2][3] = {0}; // 2 solutions, 3 variables (shoulder, elbow, wrist)
+float bestSolution[3] = {0}; // shoulder, elbow, wrist angles for the best solution
+float current_angles[3] = {0}; // shoulder, elbow, wrist current angles
+int best_index = 0;
 float L1 = 140.35, L2 = 95.0;
 
 #pragma endregion

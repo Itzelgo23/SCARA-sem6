@@ -222,6 +222,15 @@ extern "C" void app_main()
                         {
                             printf("Inverse kinematics solution reached\n");
                         }
+                        
+                        //current_angles[0] = magE.getTotalAngle();
+                        //current_angles[1] = quadE[0].getAngle();
+                        //current_angles[2] = quadE[1].getAngle();
+                        current_angles[0] = -60.0;
+                        current_angles[1] = 80.0;
+                        current_angles[2] = 80.0;
+                        findBestSolution(solutions,current_angles,best_index, bestSolution);
+                        printf("Best solution: %.2f %.2f %.2f\n", bestSolution[0], bestSolution[1], bestSolution[2]);
                         break;
                     }
                     default:

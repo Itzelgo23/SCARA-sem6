@@ -159,15 +159,15 @@ void getIK(float op_vars[3], float L1, float L2, int &num_solutions, float (&sol
     _beta = acos(((_L1 * _L1) + (_L2 * _L2) - (_p * _p)) / (2 * _L1 * _L2));
 
     printf("x=%.2f y=%.2f\n", x, y);
-    //printf("gamma=%.2f\n", Rad2Deg(_gamma));
-    //printf("alpha=%.2f\n", Rad2Deg(_alpha));
-    //printf("beta=%.2f\n", Rad2Deg(_beta));
-    // solutions[0][0] = z;
+    // printf("gamma=%.2f\n", Rad2Deg(_gamma));
+    // printf("alpha=%.2f\n", Rad2Deg(_alpha));
+    // printf("beta=%.2f\n", Rad2Deg(_beta));
+    //  solutions[0][0] = z;
     solutions[0][0] = Rad2Deg(_gamma - _alpha);
     solutions[0][1] = Rad2Deg(M_PI - _beta);
     solutions[0][2] = tool_angle - solutions[0][0] - solutions[0][1];
-    //solutions[0][0] = normalizeAngle(solutions[0][0]);
-    //solutions[0][1] = normalizeAngle(solutions[0][1]);
+    // solutions[0][0] = normalizeAngle(solutions[0][0]);
+    // solutions[0][1] = normalizeAngle(solutions[0][1]);
     solutions[0][2] = normalizeAngle(solutions[0][2]);
 
     if (_p == (_L1 + _L2) || _p == fabs(_L1 - _L2))
@@ -180,14 +180,34 @@ void getIK(float op_vars[3], float L1, float L2, int &num_solutions, float (&sol
     solutions[1][0] = Rad2Deg(_gamma + _alpha);                       // shoulder
     solutions[1][1] = -Rad2Deg(M_PI - _beta);                         // elbow
     solutions[1][2] = tool_angle - solutions[1][0] - solutions[1][1]; // wrist
-    //solutions[1][0] = normalizeAngle(solutions[1][0]);                // shoulder
-    //solutions[1][1] = normalizeAngle(solutions[1][1]);                // elbow
-    solutions[1][2] = normalizeAngle(solutions[1][2]);                // wrist
+    // solutions[1][0] = normalizeAngle(solutions[1][0]);                // shoulder
+    // solutions[1][1] = normalizeAngle(solutions[1][1]);                // elbow
+    solutions[1][2] = normalizeAngle(solutions[1][2]); // wrist
 
     num_solutions = 2; // Two solutions
 }
 
-void findBestSolution(float solutions[2][3], float current[3], int &index)
+float unwrapToNearest(float angle, float current)
+{
+    float best = angle;
+    float bestErr = fabs(angle - current);
+
+    for (int k = -3; k <= 3; k++)
+    {
+        float candidate = angle + 360.0f * k;
+        float err = fabs(candidate - current);
+
+        if (err < bestErr)
+        {
+            bestErr = err;
+            best = candidate;
+        }
+    }
+
+    return best;
+}
+
+void findBestSolution(float solutions[2][3], float current[3], int &index,float bestSolution[3])
 {
     // solutions[2][3] from getIK, current[3] from getFK, index is the output for the best solution
 
@@ -206,23 +226,19 @@ void findBestSolution(float solutions[2][3], float current[3], int &index)
 
     for (int i = 0; i < 2; i++)
     {
-        float d0 = fabs(solutions[i][0] - current[0]);
-        float d1 = fabs(solutions[i][1] - current[1]);
-        float d2 = fabs(solutions[i][2] - current[2]);
+        float q0 = unwrapToNearest(solutions[i][0], current[0]);
+        float q1 = unwrapToNearest(solutions[i][1], current[1]);
+        float q2 = unwrapToNearest(solutions[i][2], current[2]);
 
-        // ===== JOINT LIMITS =====
-
-        // elbow ±130°
-        if (fabs(solutions[i][1]) > 130.0)
-            // error state, return without setting index to ensure no movement
+        if (fabs(q1) > 130.0f)
             continue;
 
-        // shoulder example ±135°
-        if (fabs(solutions[i][0]) > 135.0)
-            // error state, return without setting index to ensure no movement
+        if (fabs(q0) > 280.0f)
             continue;
 
-        // finds best solution based on weighted distance to current position, giving more importance to shoulder and base
+        float d0 = fabs(q0 - current[0]);
+        float d1 = fabs(q1 - current[1]);
+        float d2 = fabs(q2 - current[2]);
 
         float cost =
             weights[0] * d0 +
@@ -233,7 +249,10 @@ void findBestSolution(float solutions[2][3], float current[3], int &index)
         {
             bestCost = cost;
             index = i;
-            // returns index between 0 and 1 for the best solution, -1 if no valid solution
+
+            bestSolution[0] = q0;
+            bestSolution[1] = q1;
+            bestSolution[2] = q2;
         }
     }
 }
