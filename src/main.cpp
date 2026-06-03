@@ -193,21 +193,26 @@ extern "C" void app_main()
                     {
                         // getFK(lengths, Base_Motor.getAngle(), magE.getTotalAngle(), quadE[0].getAngle(), quadE[1].getAngle(), T_final, euler);
                         getFK(lengths, 0, set_ref1, set_ref2, set_ref3, T_final, euler);
-                        printf("x=%.2f y=%.2f phi=%.2f\n",T_final[0][3],T_final[1][3],euler[0]);
+                        printf("x=%.2f y=%.2f phi=%.2f\n", T_final[0][3], T_final[1][3], euler[0]);
                         break;
                     }
                     case Inverse:
+
                     {
                         location[0] = set_ref1;
                         location[1] = set_ref2;
                         location[2] = set_ref3;
+                        //printf("set_ref1 = %.2f\n", set_ref1);
+                        //printf("set_ref2 = %.2f\n", set_ref2);
+                        //printf("set_ref3 = %.2f\n", set_ref3);
 
                         getIK(location, L1, L2, num_solutions, solutions);
-                        printf("theta1 = %.2f\n", solutions[0][0]);
+                        printf("num_solutions = %d | theta1: %.2f\n", num_solutions, solutions[0][0]);
                         // PIDmotors(solutions[0][0], Shoulder, control[1], error[1], angle_S[1], speed_S[1]);
                         PIDmotors(solutions[0][1], Elbow, control[2], error[2], angle_DC[0], speed_DC[0]);
                         PIDmotors(solutions[0][2], Wrist, control[3], error[3], angle_DC[1], speed_DC[1]);
-                        printf("# solutions: %d | Target Position: theta1=%.2f | theta2=%.2f |theta3=%.2f,  \n", num_solutions, solutions[0][0], solutions[0][1], solutions[0][2]);
+                        printf("Sol0: %.2f %.2f %.2f\n", solutions[0][0], solutions[0][1], solutions[0][2]);
+                        printf("Sol1: %.2f %.2f %.2f\n", solutions[1][0], solutions[1][1], solutions[1][2]);
                         // Base_Motor.setSpeed(control[0]);
                         // Shoulder_Motor.setSpeed(control[1]);
                         Elbow_Motor.setSpeed(control[2]);
@@ -442,11 +447,11 @@ extern "C" void app_main()
                 }
 
             case Error:
-                Base_Motor.setSpeed(0);
-                Shoulder_Motor.setSpeed(0);
+                //Base_Motor.setSpeed(0);
+                //Shoulder_Motor.setSpeed(0);
                 // Elbow_Motor.setSpeed(0);
-                Wrist_Motor.setSpeed(0);
-                Gripper_Motor.set(0);
+                //Wrist_Motor.setSpeed(0);
+                //Gripper_Motor.set(0);
                 break;
             }
             // getFK(lengths, height, magE.getTotalAngle(), quadE[0].getAngle(), quadE[1].getAngle(), T_final, euler);
@@ -481,11 +486,12 @@ extern "C" void app_main()
             {
                 buffer_in[uart_index] = '\0';
 
-                sscanf(buffer_in, "%d,%d,%f,%f,%f,%f", &robot_tmp, &motor_tmp, &set_ref1, &set_ref2, &set_ref3, &set_ref4);
+                int n =sscanf(buffer_in, "%d,%d,%f,%f,%f,%f", &robot_tmp, &motor_tmp, &set_ref1, &set_ref2, &set_ref3, &set_ref4);
                 robot_state = (RobotState)robot_tmp;
                 motor_case = (MotorTypes)motor_tmp;
                 uart_index = 0;
-                // printf("recibido: %s\n",buffer);
+                printf("sscanf parsed %d fields\n", n);
+                printf("recibido: %s\n",buffer_in);
             }
             else if (uart_index < sizeof(buffer_in) - 1)
             {

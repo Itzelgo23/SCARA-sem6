@@ -103,13 +103,13 @@ void getFK(float lengths[5], float d2, float q1, float q3, float q4, float (&T_f
     // Change to this to ignore prismatic and control individually
     float dh[4][4] = {
         // theta, d, alpha, r
-        {q1, d1+d2, 0.0, 0.0},  // Shoulder -- rotation and preestablished height to base + pismatic change d2
-        {0, 0.0, 0.0, L1},  // Elbow -- rotation and arm length
-        {q3, -b1, 0.0, L2},  // Wrist -- rotation, height between arms and arm length
-        {q4, -b2, 0.0, 0.0} // Gripper -- no movement, just height from arm to gripper
+        {q1, d1 + d2, 0.0, 0.0}, // Shoulder -- rotation and preestablished height to base + pismatic change d2
+        {0, 0.0, 0.0, L1},       // Elbow -- rotation and arm length
+        {q3, -b1, 0.0, L2},      // Wrist -- rotation, height between arms and arm length
+        {q4, -b2, 0.0, 0.0}      // Gripper -- no movement, just height from arm to gripper
     };
 
-    float I[4][4] = {  
+    float I[4][4] = {
         {1, 0, 0, 0},
         {0, 1, 0, 0},
         {0, 0, 1, 0},
@@ -123,13 +123,14 @@ void getFK(float lengths[5], float d2, float q1, float q3, float q4, float (&T_f
         multiplyMatrices(T_final, H_temp, T_final);
     }
     rotm2eul(T_final, euler);
-    
 }
 
 float normalizeAngle(float a)
 {
-    while(a > 180.0f) a -= 360.0f;
-    while(a < -180.0f) a += 360.0f;
+    while (a > 180.0f)
+        a -= 360.0f;
+    while (a < -180.0f)
+        a += 360.0f;
     return a;
 }
 
@@ -146,25 +147,30 @@ void getIK(float op_vars[3], float L1, float L2, int &num_solutions, float (&sol
 
     _p = sqrt((x * x) + (y * y));
     printf("p: %.2f,x: %.2f,y: %.2f\n", _p, x, y);
-    if (_p > _L1 + _L2 || _p < fabs(_L1 - _L2))
+    if (_p > (_L1 + _L2) || _p < fabs(_L1 - _L2))
     {
         num_solutions = 0; // No solutions
+        printf("Position out of reach\n");
         return;
     }
 
     _gamma = atan2(y, x);
     _alpha = acos(((_L1 * _L1) + (_p * _p) - (_L2 * _L2)) / (2 * _L1 * _p));
-    _beta = acos((_L1 * _L1 + _L2 * _L2 - _p * _p) / (2 * _L1 * _L2));
+    _beta = acos(((_L1 * _L1) + (_L2 * _L2) - (_p * _p)) / (2 * _L1 * _L2));
 
+    printf("x=%.2f y=%.2f\n", x, y);
+    //printf("gamma=%.2f\n", Rad2Deg(_gamma));
+    //printf("alpha=%.2f\n", Rad2Deg(_alpha));
+    //printf("beta=%.2f\n", Rad2Deg(_beta));
     // solutions[0][0] = z;
     solutions[0][0] = Rad2Deg(_gamma - _alpha);
     solutions[0][1] = Rad2Deg(M_PI - _beta);
     solutions[0][2] = tool_angle - solutions[0][0] - solutions[0][1];
-    solutions[0][0] = normalizeAngle(solutions[0][0]);        
-    solutions[0][1] = normalizeAngle(solutions[0][1]);                     
+    //solutions[0][0] = normalizeAngle(solutions[0][0]);
+    //solutions[0][1] = normalizeAngle(solutions[0][1]);
     solutions[0][2] = normalizeAngle(solutions[0][2]);
 
-    if (_p == _L1 + _L2 || _p == fabs(_L1 - _L2))
+    if (_p == (_L1 + _L2) || _p == fabs(_L1 - _L2))
     {
         num_solutions = 1; // One solution
         return;
@@ -172,13 +178,13 @@ void getIK(float op_vars[3], float L1, float L2, int &num_solutions, float (&sol
 
     // solutions[1][0] = z;
     solutions[1][0] = Rad2Deg(_gamma + _alpha);                       // shoulder
-    solutions[1][1] = Rad2Deg(_beta - M_PI);                          // elbow
+    solutions[1][1] = -Rad2Deg(M_PI - _beta);                         // elbow
     solutions[1][2] = tool_angle - solutions[1][0] - solutions[1][1]; // wrist
-    solutions[1][0] = normalizeAngle(solutions[1][0]);                      // shoulder
-    solutions[1][1] = normalizeAngle(solutions[1][1]);                      // elbow
-    solutions[1][2] = normalizeAngle(solutions[1][2]); // wrist
+    //solutions[1][0] = normalizeAngle(solutions[1][0]);                // shoulder
+    //solutions[1][1] = normalizeAngle(solutions[1][1]);                // elbow
+    solutions[1][2] = normalizeAngle(solutions[1][2]);                // wrist
 
-    num_solutions = 2;                                                // Two solutions
+    num_solutions = 2; // Two solutions
 }
 
 void findBestSolution(float solutions[2][3], float current[3], int &index)
