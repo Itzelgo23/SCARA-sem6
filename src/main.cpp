@@ -55,7 +55,14 @@ extern "C" void app_main()
                 {
                 case Init:
                 {
-                    printf("Initialization Mode\n");
+                    Base_Motor.setSpeed(0);
+                    Shoulder_Motor.setSpeed(0);
+                    Elbow_Motor.setSpeed(0);
+                    Wrist_Motor.setSpeed(0);
+
+                    uint8_t magnetRead = magE.readMagnet();
+                    printf("Magnet Status: %d\n", magnetRead);
+                    vTaskDelay(pdMS_TO_TICKS(500));
                     break;
                 }
                 case JointJog:
@@ -91,7 +98,7 @@ extern "C" void app_main()
                         PID_B_gains[1] = set_ref2;
                         PID_B_gains[2] = set_ref3;
                         ref[0] = set_ref4;
-                        // printf("moving base motor, ref: %.2f\n", ref[0]);
+                        printf("moving base motor, ref: %.2f\n", ref[0]);
                         angle_AS5600 = cm2deg(ref[0], 8.0f);
                         PIDmotors(angle_AS5600, Base, control[0], error[0], angle_S[0], speed_S[0]);
                         // printf("cm: %.2f |deg: %.2f\n", ref[0], angle_AS5600);
@@ -142,7 +149,7 @@ extern "C" void app_main()
                         */
                         ref[2] = set_ref4;
                         PIDmotors(ref[2], Elbow, control[2], error[2], angle_DC[0], speed_DC[0]);
-                        //Elbow_Motor.setSpeed(control[2]);
+                        // Elbow_Motor.setSpeed(control[2]);
                         printf("Elbow -- ref: %.2f | angle: %.2f | control: %.2f | error: %.2f\n", ref[2], angle_DC[0], control[2], error[2]);
                         // printf("%.2f,%.2f,%d\n", angle_DC[0], speed_DC[0], current);
                         Elbow_Motor.setSpeed(ref[2]);
@@ -184,23 +191,30 @@ extern "C" void app_main()
                     }
                     case Forward:
                     {
-                        getFK(lengths, height, magE.getTotalAngle(), quadE[0].getAngle(), quadE[1].getAngle(), T_final, euler);
+                        //getFK(lengths, Base_Motor.getAngle(), magE.getTotalAngle(), quadE[0].getAngle(), quadE[1].getAngle(), T_final, euler);
+                        getFK(lengths, 0, set_ref1, set_ref2, set_ref3, T_final, euler);
                         printf("End Effector Position: x=%.2f | y=%.2f | orientation=%.2f \n", euler[0], euler[1], euler[2]);
                         break;
                     }
                     case Inverse:
                     {
-                        location[0]=set_ref1;
-                        location[1]=set_ref2;
-                        location[2]=set_ref3;
-                        printf("Target Position: x=%.2f | y=%.2f | orientation=%.2f \n", location[0], location[1], location[2]);
+                        location[0] = set_ref1;
+                        location[1] = set_ref2;
+                        location[2] = set_ref3;
+                        
                         getIK(location, L1, L2, num_solutions, solutions);
                         PIDmotors(solutions[0][0], Shoulder, control[1], error[1], angle_S[1], speed_S[1]);
                         PIDmotors(solutions[0][1], Elbow, control[2], error[2], angle_DC[0], speed_DC[0]);
                         PIDmotors(solutions[0][2], Wrist, control[3], error[3], angle_DC[1], speed_DC[1]);
+                        printf("# solutions: %d | Target Position: theta1=%.2f | theta2=%.2f |theta3=%.2f,  \n", num_solutions, solutions[0][0], solutions[0][1], solutions[0][2]);
+                        // Base_Motor.setSpeed(control[0]);
+                        Shoulder_Motor.setSpeed(control[1]);
+                        Elbow_Motor.setSpeed(control[2]);
+                        Wrist_Motor.setSpeed(control[3]);
+                        Gripper_Motor.set(0);
                         if (fabs(error[1]) < 5.0f && fabs(error[2]) < 5.0f && fabs(error[3]) < 5.0f)
                         {
-                            printf("Inverse kinematics solution reached\n"); 
+                            printf("Inverse kinematics solution reached\n");
                         }
                         break;
                     }
@@ -218,6 +232,11 @@ extern "C" void app_main()
                     PIDmotors(solutions[0][0], Shoulder, control[1], error[1], angle_S[1], speed_S[1]);
                     PIDmotors(solutions[0][1], Elbow, control[2], error[2], angle_DC[0], speed_DC[0]);
                     PIDmotors(solutions[0][2], Wrist, control[3], error[3], angle_DC[1], speed_DC[1]);
+                    Base_Motor.setSpeed(control[0]);
+                    Shoulder_Motor.setSpeed(control[1]);
+                    Elbow_Motor.setSpeed(control[2]);
+                    Wrist_Motor.setSpeed(control[3]);
+                    Gripper_Motor.set(0);
                     break;
                 }
 
@@ -241,7 +260,7 @@ extern "C" void app_main()
                     case Base: // Stepper1
                     {
                         Shoulder_Motor.setSpeed(0);
-                        //Elbow_Motor.setSpeed(0);
+                        // Elbow_Motor.setSpeed(0);
                         Wrist_Motor.setSpeed(0);
                         Gripper_Motor.set(0);
 
@@ -259,7 +278,7 @@ extern "C" void app_main()
                     case Shoulder: // Stepper2
                     {
                         Base_Motor.setSpeed(0);
-                        //Elbow_Motor.setSpeed(0);
+                        // Elbow_Motor.setSpeed(0);
                         Wrist_Motor.setSpeed(0);
                         Gripper_Motor.set(0);
 
@@ -297,7 +316,7 @@ extern "C" void app_main()
                     {
                         Base_Motor.setSpeed(0);
                         Shoulder_Motor.setSpeed(0);
-                        //Elbow_Motor.setSpeed(0);
+                        // Elbow_Motor.setSpeed(0);
                         Gripper_Motor.set(0);
 
                         PID_W_gains[0] = set_ref1;
@@ -314,7 +333,7 @@ extern "C" void app_main()
                         printf("Activating gripper\n");
                         Base_Motor.setSpeed(0);
                         Shoulder_Motor.setSpeed(0);
-                        //Elbow_Motor.setSpeed(0);
+                        // Elbow_Motor.setSpeed(0);
                         Wrist_Motor.setSpeed(0);
 
                         Gripper_Motor.set(1);
@@ -323,7 +342,7 @@ extern "C" void app_main()
                     default:
                         break;
                     }
-                    
+
                     break;
                 }
 
@@ -424,15 +443,15 @@ extern "C" void app_main()
             case Error:
                 Base_Motor.setSpeed(0);
                 Shoulder_Motor.setSpeed(0);
-                //Elbow_Motor.setSpeed(0);
+                // Elbow_Motor.setSpeed(0);
                 Wrist_Motor.setSpeed(0);
                 Gripper_Motor.set(0);
                 break;
             }
-            //getFK(lengths, height, magE.getTotalAngle(), quadE[0].getAngle(), quadE[1].getAngle(), T_final, euler);
-            
-            //send_message = sprintf(message, "%d,%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n", Pick_done, Place_done, angle_S[1], angle_DC[0], angle_DC[1],euler[0],euler[1],deg2cm(angle_S[0], 8.0f));
-            //uart.write(message, send_message);
+            // getFK(lengths, height, magE.getTotalAngle(), quadE[0].getAngle(), quadE[1].getAngle(), T_final, euler);
+
+            // send_message = sprintf(message, "%d,%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n", Pick_done, Place_done, angle_S[1], angle_DC[0], angle_DC[1],euler[0],euler[1],deg2cm(angle_S[0], 8.0f));
+            // uart.write(message, send_message);
             /*int len = uart.available();
             if (len)
             {
