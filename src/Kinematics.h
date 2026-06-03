@@ -99,9 +99,10 @@ void getFK(float lengths[5], float d2, float q1, float q3, float q4, float (&T_f
 
     // dh parameters
             //Change to this to ignore prismatic and control individually
-    float dh[4][4] = {
+    float dh[5][4] = {
     // theta, d, alpha, r
         {q1, d1, 0.0, 0.0}, // Shoulder -- rotation and preestablished height to base
+        {0.0, d2, 0.0, 0.0}, // Prismatic joint for vertical movement of the arm
         {q3, 0.0, 0.0, L1},  // Elbow -- rotation and arm length
         {q4, -b1, 0.0, L2},  // Wrist -- rotation, height between arms and arm length
         {0.0, -b2, 0.0, 0.0}  //Gripper -- no movement, just height from arm to gripper
@@ -115,7 +116,7 @@ void getFK(float lengths[5], float d2, float q1, float q3, float q4, float (&T_f
     std::copy(&I[0][0], &I[0][0] + 16, &T_final[0][0]);
 
     float H_temp[4][4];
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < 5; i++)
     {
         getHM(dh[i], H_temp);
         multiplyMatrices(T_final, H_temp, T_final);

@@ -238,7 +238,7 @@ float _L1, _L2, _p, _gamma, _alpha, _beta;
 float sol[2][4] = {0};
 float T_final[4][4] = {0};
 float _t, _d, _a, _r;
-float lengths[5] = {0.0, 0.0, 0.0, 0.0, 0.0}; // height base, arm1, arm2, height between arms, height gripper
+float lengths[5] = {182.2, 140.35, 95.0, 49.97, 180.34}; // height base, arm1, arm2, height between arms, height gripper
 float height;
 float euler[3] = {0.0, 0.0, 0.0}; // yaw, pitch, roll
 float location[3] = {0.0, 0.0, 0.0}; // x,y,wrist angle
