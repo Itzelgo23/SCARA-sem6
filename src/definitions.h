@@ -194,7 +194,7 @@ float max_DC_freq[2] = {90.0f,99.0f}; //Elbow, Wrist
 #pragma region Stepper variables
 //0.42A when shoulder moves, 0.31A when not moving.
 const float step_angle = 1.8f;
-float max_freq[2] = {1000.0f,4000.0f}; //base, shoulder
+float max_freq[2] = {1000.0f,300.0f}; //base, shoulder
 float speed_S[2] = {0.0,0.0};
 float angle_S[2] = {0.0,0.0};
 float home_freq;
@@ -224,7 +224,7 @@ float ref[4] = {0.0, 0.0, 0.0, 0.0};
 
 float PID_B_gains[3] = {30.0, 0.0, 0.0}; //no encoder
 float PID_S_gains[3] = {15.0, 0.0, 0.0}; //mag encoder
-float PID_E_gains[3] = {1.2, 0.0, 0.0};  
+float PID_E_gains[3] = {1.3, 0.0, 0.0};  
 float PID_W_gains[3] = {10.0, 0.0, 0.0};  
 uint64_t PID_us     = 10000;
 #pragma endregion

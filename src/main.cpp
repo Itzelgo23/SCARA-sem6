@@ -101,6 +101,7 @@ extern "C" void app_main()
                         printf("moving base motor, ref: %.2f\n", ref[0]);
                         angle_AS5600 = cm2deg(ref[0], 8.0f);
                         PIDmotors(angle_AS5600, Base, control[0], error[0], angle_S[0], speed_S[0]);
+                        height = deg2cm(Base_Motor.getAngle(), 8.0f);
                         // printf("cm: %.2f |deg: %.2f\n", ref[0], angle_AS5600);
                         Base_Motor.set(control[0], error[0]);
                         break;
@@ -124,9 +125,9 @@ extern "C" void app_main()
                         ref[1] = set_ref4;
                         PIDmotors(ref[1], Shoulder, control[1], error[1], angle_S[1], speed_S[1]);
                         Shoulder_Motor.set(control[1], error[1]);
-                        height = deg2cm(Base_Motor.getAngle(), 8.0f);
+                        
                         // getFK(lengths,height, magE.getTotalAngle(), quadE[0].getAngle(), quadE[1].getAngle(), T_final, euler);
-                        // printf("ref: %.2f | angle: %.2f | control: %.2f | error: %.2f\n", ref[1], angle_S[1], control[1], error[1]);
+                        printf("ref: %.2f | angle: %.2f | control: %.2f | error: %.2f\n", ref[1], angle_S[1], control[1], error[1]);
                         break;
                     }
                     case Elbow: // DC1
@@ -149,10 +150,10 @@ extern "C" void app_main()
                         */
                         ref[2] = set_ref4;
                         PIDmotors(ref[2], Elbow, control[2], error[2], angle_DC[0], speed_DC[0]);
-                        // Elbow_Motor.setSpeed(control[2]);
+                        Elbow_Motor.setSpeed(control[2]);
                         printf("Elbow -- ref: %.2f | angle: %.2f | control: %.2f | error: %.2f\n", ref[2], angle_DC[0], control[2], error[2]);
                         // printf("%.2f,%.2f,%d\n", angle_DC[0], speed_DC[0], current);
-                        Elbow_Motor.setSpeed(ref[2]);
+                        //Elbow_Motor.setSpeed(ref[2]);
                         // printf("%.2f,%.2f,%d\n",quadE[0].getAngle(),quadE[0].getSpeed(),current);
                         break;
                     }
@@ -201,28 +202,20 @@ extern "C" void app_main()
                     {
                         location[0] = set_ref1;
                         location[1] = set_ref2;
-                        location[2] = set_ref3;
-                        //printf("set_ref1 = %.2f\n", set_ref1);
-                        //printf("set_ref2 = %.2f\n", set_ref2);
-                        //printf("set_ref3 = %.2f\n", set_ref3);
+                        location[2] = set_ref4;
 
                         getIK(location, L1, L2, num_solutions, solutions);
                         printf("num_solutions = %d | theta1: %.2f\n", num_solutions, solutions[0][0]);
-                        // PIDmotors(solutions[0][0], Shoulder, control[1], error[1], angle_S[1], speed_S[1]);
-                        PIDmotors(solutions[0][1], Elbow, control[2], error[2], angle_DC[0], speed_DC[0]);
-                        PIDmotors(solutions[0][2], Wrist, control[3], error[3], angle_DC[1], speed_DC[1]);
-                        printf("Sol0: %.2f %.2f %.2f\n", solutions[0][0], solutions[0][1], solutions[0][2]);
-                        printf("Sol1: %.2f %.2f %.2f\n", solutions[1][0], solutions[1][1], solutions[1][2]);
-                        // Base_Motor.setSpeed(control[0]);
-                        // Shoulder_Motor.setSpeed(control[1]);
-                        Elbow_Motor.setSpeed(control[2]);
-                        Wrist_Motor.setSpeed(control[3]);
-                        Gripper_Motor.set(0);
+                        //PIDmotors(solutions[0][0], Shoulder, control[1], error[1], angle_S[1], speed_S[1]);
+                        //PIDmotors(solutions[0][1], Elbow, control[2], error[2], angle_DC[0], speed_DC[0]);
+                        //PIDmotors(solutions[0][2], Wrist, control[3], error[3], angle_DC[1], speed_DC[1]);
+                        //printf("Sol0: %.2f %.2f %.2f\n", solutions[0][0], solutions[0][1], solutions[0][2]);
+                        //printf("Sol1: %.2f %.2f %.2f\n", solutions[1][0], solutions[1][1], solutions[1][2]);
                         if (fabs(error[1]) < 5.0f && fabs(error[2]) < 5.0f && fabs(error[3]) < 5.0f)
                         {
                             printf("Inverse kinematics solution reached\n");
                         }
-                        
+                        printf("Current angles before best solution: Shoulder: %.2f, Elbow: %.2f, Wrist: %.2f\n", angle_S[1], angle_DC[0], angle_DC[1]);
                         //current_angles[0] = magE.getTotalAngle();
                         //current_angles[1] = quadE[0].getAngle();
                         //current_angles[2] = quadE[1].getAngle();
@@ -231,6 +224,18 @@ extern "C" void app_main()
                         current_angles[2] = 80.0;
                         findBestSolution(solutions,current_angles,best_index, bestSolution);
                         printf("Best solution: %.2f %.2f %.2f\n", bestSolution[0], bestSolution[1], bestSolution[2]);
+                        
+                        angle_AS5600 = cm2deg(ref[0], 8.0f);
+                        PIDmotors(angle_AS5600, Base, control[0], error[0], angle_S[0], speed_S[0]);
+                        PIDmotors(bestSolution[0], Shoulder, control[1], error[1], angle_S[1], speed_S[1]);
+                        PIDmotors(bestSolution[1], Elbow, control[2], error[2], angle_DC[0], speed_DC[0]);
+                        PIDmotors(bestSolution[2], Wrist, control[3], error[3], angle_DC[1], speed_DC[1]);
+                        
+                        Base_Motor.set(control[0], error[0]);
+                        Shoulder_Motor.setSpeed(control[1]);
+                        Elbow_Motor.setSpeed(control[2]);
+                        Wrist_Motor.setSpeed(control[3]);
+                        Gripper_Motor.set(0);
                         break;
                     }
                     default:
@@ -443,7 +448,7 @@ extern "C" void app_main()
 
                 case Home:
                 {
-                    home_reached = MoveHome(-fabs(home_freq));
+                    home_reached = MoveHome(-fabs(set_ref4));
                     printf("Moving to home, freq: %.2f, reached: %d\n", home_freq, home_reached);
                     if (home_reached)
                     {
