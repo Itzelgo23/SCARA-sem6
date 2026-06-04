@@ -225,14 +225,14 @@ extern "C" void app_main()
                         findBestSolution(solutions,current_angles,best_index, bestSolution);
                         printf("Best solution: %.2f %.2f %.2f\n", bestSolution[0], bestSolution[1], bestSolution[2]);
                         
-                        angle_AS5600 = cm2deg(ref[0], 8.0f);
+                        angle_AS5600 = cm2deg(set_ref3, 8.0f);
                         PIDmotors(angle_AS5600, Base, control[0], error[0], angle_S[0], speed_S[0]);
                         PIDmotors(bestSolution[0], Shoulder, control[1], error[1], angle_S[1], speed_S[1]);
                         PIDmotors(bestSolution[1], Elbow, control[2], error[2], angle_DC[0], speed_DC[0]);
                         PIDmotors(bestSolution[2], Wrist, control[3], error[3], angle_DC[1], speed_DC[1]);
                         
                         Base_Motor.set(control[0], error[0]);
-                        Shoulder_Motor.setSpeed(control[1]);
+                        Shoulder_Motor.set(control[1], error[1]);
                         Elbow_Motor.setSpeed(control[2]);
                         Wrist_Motor.setSpeed(control[3]);
                         Gripper_Motor.set(0);
