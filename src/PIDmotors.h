@@ -57,7 +57,7 @@ void PIDmotors(float move_ref, uint8_t robot_section, float &control_out, float 
     
     control_out = pid[i].calculate(error_out);
     //printf("i: %d\n", i);
-    //printf("Error: %.2f| Control: %.2f\n", error_out, control_out);
+    //printf("ref: %.2f| angle: %.2f| Error: %.2f| Control: %.2f\n", move_ref, measurement_out, error_out, control_out);
 
     prev_error[i] = error_out;
 }

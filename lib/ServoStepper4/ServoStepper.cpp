@@ -69,7 +69,7 @@ float ServoStepper::set(float control, float error)
 
     _dir = (_freq > 0) ? 1 : (_freq < 0) ? -1 : 0;
 
-    printf("Control: %.2f | Error: %.2f | Set freq: %.2f\n", control, error, _freq);
+    //printf("Control: %.2f | Error: %.2f | Set freq: %.2f\n", control, error, _freq);
     stepper.setSpeed(_freq);
     return _freq;
 }
