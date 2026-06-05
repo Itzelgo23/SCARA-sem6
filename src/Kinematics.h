@@ -90,7 +90,7 @@ void rotm2eul(float T[4][4], float (&euler)[3])
     euler[0] *= rad2deg;
 }
 
-void getFK(float lengths[5], float d2, float q1, float q3, float q4, float (&T_final)[4][4], float (&euler)[3])
+void getFK(float lengths[5], float d2, float q2, float q3, float q4, float (&T_final)[4][4], float (&euler)[3])
 {
     // SCARA dimensions
     float d1 = lengths[0]; // height base
@@ -103,10 +103,10 @@ void getFK(float lengths[5], float d2, float q1, float q3, float q4, float (&T_f
     // Change to this to ignore prismatic and control individually
     float dh[4][4] = {
         // theta, d, alpha, r
-        {q1, d1 + d2, 0.0, 0.0}, // Shoulder -- rotation and preestablished height to base + pismatic change d2
-        {0, 0.0, 0.0, L1},       // Elbow -- rotation and arm length
-        {q3, -b1, 0.0, L2},      // Wrist -- rotation, height between arms and arm length
-        {q4, -b2, 0.0, 0.0}      // Gripper -- no movement, just height from arm to gripper
+        {q2, -d1 - d2, 0.0, 0.0}, // Shoulder -- rotation and preestablished height to base + pismatic change d2
+        {0.0, b1, 0.0, L1},       // Elbow -- rotation and arm length
+        {q3, 0.0, 0.0, L2},      // Wrist -- rotation, height between arms and arm length
+        {q4, b2, 0.0, 0.0}      // Gripper -- no movement, just height from arm to gripper
     };
 
     float I[4][4] = {
@@ -158,7 +158,6 @@ void getIK(float op_vars[3], float L1, float L2, int &num_solutions, float (&sol
     _alpha = acos(((_L1 * _L1) + (_p * _p) - (_L2 * _L2)) / (2 * _L1 * _p));
     _beta = acos(((_L1 * _L1) + (_L2 * _L2) - (_p * _p)) / (2 * _L1 * _L2));
 
-    printf("x=%.2f y=%.2f\n", x, y);
     // printf("gamma=%.2f\n", Rad2Deg(_gamma));
     // printf("alpha=%.2f\n", Rad2Deg(_alpha));
     // printf("beta=%.2f\n", Rad2Deg(_beta));
@@ -233,7 +232,7 @@ void findBestSolution(float solutions[2][3], float current[3], int &index,float 
         if (fabs(q1) > 130.0f)
             continue;
 
-        if (fabs(q0) > 280.0f)
+        if (fabs(q0) > 200.0f)
             continue;
 
         float d0 = fabs(q0 - current[0]);

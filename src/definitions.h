@@ -146,6 +146,7 @@ float set_ref1 = 0.0;
 float set_ref2 = 0.0;
 float set_ref3 = 0.0;
 float set_ref4 = 0.0;
+float last_ref4 = 0.0;
 uint32_t send_message;
 char message[128];
 #pragma endregion
@@ -188,13 +189,13 @@ const float DpE_Elbow = 0.36437f;
 const float DpE_Wrist = 0.257142857f;
 float speed_DC[2] = {0.0,0.0};
 float angle_DC[2] = {0.0,0.0};
-float max_DC_freq[2] = {90.0f,99.0f}; //Elbow, Wrist
+float max_DC_freq[2] = {65.0f,65.0f}; //Elbow, Wrist
 #pragma endregion
 
 #pragma region Stepper variables
 //0.42A when shoulder moves, 0.31A when not moving.
 const float step_angle = 1.8f;
-float max_freq[2] = {1000.0f,300.0f}; //base, shoulder
+float max_freq[2] = {1000.0f,100.0f}; //base, shoulder
 float speed_S[2] = {0.0,0.0};
 float angle_S[2] = {0.0,0.0};
 float home_freq;
@@ -212,7 +213,7 @@ bool is_home = false;
 bool home_reached = false;
 #pragma endregion
 
-#pragma region PID variables
+#pragma region PID variables 
 
 float error[4] = {0.0, 0.0, 0.0, 0.0}; // base,Shoulder,Elbow,Wrist
 
@@ -220,12 +221,12 @@ float prev_error[4] = {0.0, 0.0, 0.0, 0.0};
 
 float control[4];
 
-float ref[4] = {0.0, 0.0, 0.0, 0.0};
+float ref[4] = {0.0, 0.0, 0.0, 0.0}; 
 
 float PID_B_gains[3] = {30.0, 0.0, 0.0}; //no encoder
-float PID_S_gains[3] = {15.0, 0.0, 0.0}; //mag encoder
-float PID_E_gains[3] = {1.3, 0.0, 0.0};  
-float PID_W_gains[3] = {10.0, 0.0, 0.0};  
+float PID_S_gains[3] = {16.0, 0.0, 0.0}; //mag encoder
+float PID_E_gains[3] = {2.0, 0.0, 0.0};  
+float PID_W_gains[3] = {2.0, 0.0, 0.0};  
 uint64_t PID_us     = 10000;
 #pragma endregion
 
@@ -254,10 +255,10 @@ float L1 = 140.35, L2 = 95.0;
 #pragma region Pick and Place variables
 bool Pick_done = false;
 bool Place_done = false;
-float Place1[3] = {10.0f, 10.0f, 0.0f}; // x,y,wrist angle
-float Place2[3] = {15.0f, 15.0f, 0.0f}; // x,y,wrist angle
-float Place3[3] = {5.0f, 5.0f, 0.0f}; // x,y,wrist angle
-float Place4[3] = {20.0f, 5.0f, 0.0f}; // x,y,wrist angle
+float Place1[3] = {150.0f, 95.0f, 0.0f}; // x,y,wrist angle
+float Place2[3] = {253.0f, 0.0f, 0.0f}; // x,y,wrist angle
+float Place3[3] = {0.0f, 253.0f, 0.0f}; // x,y,wrist angle
+float Place4[3] = {170.0f, 75.0f, 0.0f}; // x,y,wrist angle
 #pragma endregion
 
 //--------------------------
