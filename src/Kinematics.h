@@ -146,7 +146,7 @@ void getIK(float op_vars[3], float L1, float L2, int &num_solutions, float (&sol
     _L2 = L2;
 
     _p = sqrt((x * x) + (y * y));
-    printf("p: %.2f,x: %.2f,y: %.2f\n", _p, x, y);
+    //printf("p: %.2f,x: %.2f,y: %.2f\n", _p, x, y);
     if (_p > (_L1 + _L2) || _p < fabs(_L1 - _L2))
     {
         num_solutions = 0; // No solutions

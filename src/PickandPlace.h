@@ -54,7 +54,7 @@ bool setPick(float pick_coords1, float pick_coords2, float pick_coords3)
 
         if (fabs(error[0]) < 2.0f)
         {
-            printf("Pick reached UP\n");
+            //printf("Pick reached UP\n");
             pickState = PICK_MOVE_DOWN;
         }
 
@@ -77,7 +77,7 @@ bool setPick(float pick_coords1, float pick_coords2, float pick_coords3)
 
         if (fabs(error[0]) < 2.0f)
         {
-            printf("Pick reached DOWN\n");
+            //printf("Pick reached DOWN\n");
             pickState = PICK_CLOSE_GRIPPER;
         }
 
@@ -87,7 +87,7 @@ bool setPick(float pick_coords1, float pick_coords2, float pick_coords3)
 
         Gripper_Motor.set(1);
 
-        printf("Pick: Gripper closed\n");
+        //printf("Pick: Gripper closed\n");
         vTaskDelay(pdMS_TO_TICKS(1000)); // Esperar a que el gripper se cierre
         pickState = PICK_FINISHED;
 
@@ -141,7 +141,7 @@ bool setPlace(float place_coords[3])
 
         if (fabs(error[0]) < 2.0f)
         {
-            printf("Place reached UP\n");
+            //printf("Place reached UP\n");
             placeState = PLACE_MOVE_DOWN;
         }
 
@@ -164,7 +164,7 @@ bool setPlace(float place_coords[3])
 
         if (fabs(error[0]) < 2.0f)
         {
-            printf("Place reached DOWN\n");
+            //printf("Place reached DOWN\n");
             placeState = PLACE_OPEN_GRIPPER;
         }
 
@@ -172,7 +172,7 @@ bool setPlace(float place_coords[3])
 
     case PLACE_OPEN_GRIPPER:
 
-        printf("Place: Opening gripper\n");
+        //printf("Place: Opening gripper\n");
 
         Gripper_Motor.set(0);
 
@@ -184,7 +184,7 @@ bool setPlace(float place_coords[3])
 
     case PLACE_FINISHED:
 
-        printf("Place finished\n");
+        //printf("Place finished\n");
 
         placeState = PLACE_MOVE_UP; // reset para la siguiente vez
 

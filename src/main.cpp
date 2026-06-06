@@ -59,7 +59,7 @@ extern "C" void app_main()
                     Wrist_Motor.setSpeed(0);
 
                     uint8_t magnetRead = magE.readMagnet();
-                    printf("Magnet Status: %d\n", magnetRead);
+                    //printf("Magnet Status: %d\n", magnetRead);
                     vTaskDelay(pdMS_TO_TICKS(500));
                     break;
                 }
@@ -75,7 +75,7 @@ extern "C" void app_main()
                         Wrist_Motor.setSpeed(0);
 
                         uint8_t magnetRead = magE.readMagnet();
-                        printf("Magnet Status: %d\n", magnetRead);
+                        //printf("Magnet Status: %d\n", magnetRead);
                         vTaskDelay(pdMS_TO_TICKS(500));
                         break;
                     }
@@ -96,7 +96,7 @@ extern "C" void app_main()
                         PID_B_gains[1] = set_ref2;
                         PID_B_gains[2] = set_ref3;
                         ref[0] = set_ref4;
-                        printf("moving base motor, ref: %.2f\n", ref[0]);
+                        //printf("moving base motor, ref: %.2f\n", ref[0]);
                         angle_AS5600 = cm2deg(ref[0], 8.0f);
                         PIDmotors(angle_AS5600, Base, control[0], error[0], angle_S[0], speed_S[0]);
                         height = deg2cm(Base_Motor.getAngle(), 8.0f);
@@ -125,7 +125,7 @@ extern "C" void app_main()
                         Shoulder_Motor.set(control[1], error[1]);
 
                         // getFK(lengths,height, magE.getTotalAngle(), quadE[0].getAngle(), quadE[1].getAngle(), T_final, euler);
-                        printf("ref: %.2f | angle: %.2f | control: %.2f | error: %.2f\n", ref[1], angle_S[1], control[1], error[1]);
+                       // printf("ref: %.2f | angle: %.2f | control: %.2f | error: %.2f\n", ref[1], angle_S[1], control[1], error[1]);
                         break;
                     }
                     case Elbow: // DC1
@@ -149,7 +149,7 @@ extern "C" void app_main()
                         ref[2] = set_ref4;
                         PIDmotors(ref[2], Elbow, control[2], error[2], angle_DC[0], speed_DC[0]);
                         Elbow_Motor.setSpeed(control[2]);
-                        printf("Elbow -- ref: %.2f | angle: %.2f | control: %.2f | error: %.2f\n", ref[2], angle_DC[0], control[2], error[2]);
+                        //printf("Elbow -- ref: %.2f | angle: %.2f | control: %.2f | error: %.2f\n", ref[2], angle_DC[0], control[2], error[2]);
                         // printf("%.2f,%.2f,%d\n", angle_DC[0], speed_DC[0], current);
                         // Elbow_Motor.setSpeed(ref[2]);
                         // printf("%.2f,%.2f,%d\n",quadE[0].getAngle(),quadE[0].getSpeed(),current);
@@ -180,12 +180,12 @@ extern "C" void app_main()
                     }
                     case Gripper:
                     {
-                        printf("Activating gripper\n");
+                        //printf("Activating gripper\n");
                         Base_Motor.setSpeed(0);
                         Shoulder_Motor.setSpeed(0);
                         Elbow_Motor.setSpeed(0);
                         Wrist_Motor.setSpeed(0);
-
+                    
                         Gripper_Motor.set(1);
                         break;
                     }
@@ -193,7 +193,7 @@ extern "C" void app_main()
                     {
                         // getFK(lengths, Base_Motor.getAngle(), magE.getTotalAngle(), quadE[0].getAngle(), quadE[1].getAngle(), T_final, euler);
                         getFK(lengths, 0, set_ref1, set_ref2, set_ref3, T_final, euler);
-                        printf("x=%.2f y=%.2f phi=%.2f\n", T_final[0][3], T_final[1][3], euler[0]);
+                        //printf("x=%.2f y=%.2f phi=%.2f\n", T_final[0][3], T_final[1][3], euler[0]);
                         break;
                     }
                     case Inverse:
@@ -211,7 +211,7 @@ extern "C" void app_main()
                             // printf("Sol1: %.2f %.2f %.2f\n", solutions[1][0], solutions[1][1], solutions[1][2]);
                             if (fabs(error[1]) < 5.0f && fabs(error[2]) < 5.0f && fabs(error[3]) < 5.0f)
                             {
-                                printf("Inverse kinematics solution reached\n");
+                                //printf("Inverse kinematics solution reached\n");
                             }
                             // printf("Current angles before best solution: Shoulder: %.2f, Elbow: %.2f, Wrist: %.2f\n", angle_S[1], angle_DC[0], angle_DC[1]);
                             magE.readRawAngle();
@@ -238,14 +238,14 @@ extern "C" void app_main()
                             Wrist_Motor.setSpeed(control[3]);
                             Gripper_Motor.set(0);
                             vTaskDelay(pdMS_TO_TICKS(100));
-                            printf("Base-- ref: %.2f| angle: %.2f | control: %.2f | error: %.2f\n", ref[0], angle_S[0], control[0], error[0]);
+                            //printf("Base-- ref: %.2f| angle: %.2f | control: %.2f | error: %.2f\n", ref[0], angle_S[0], control[0], error[0]);
                             // printf("Elbow -- ref: %.2f | angle: %.2f | control: %.2f | error: %.2f\n", ref[2], angle_DC[0], control[2], error[2]);
                             // vTaskDelay(pdMS_TO_TICKS(100));
                             // printf("ref: %.2f | angle: %.2f | control: %.2f | error: %.2f\n", ref[3], angle_DC[1], control[3], error[3]);
                         }
                         else
                         {
-                            printf("Target Z too high for inverse kinematics\n");
+                            //printf("Target Z too high for inverse kinematics\n");
                             Base_Motor.setSpeed(0);
                             Shoulder_Motor.setSpeed(0);
                             Elbow_Motor.setSpeed(0);
@@ -279,7 +279,7 @@ extern "C" void app_main()
 
                 case PID_control:
                 {
-                    printf("PID Control Mode\n");
+                    //printf("PID Control Mode\n");
                     switch (motor_case)
                     {
                     case Initial:
@@ -289,8 +289,8 @@ extern "C" void app_main()
                         Elbow_Motor.setSpeed(0);
                         Wrist_Motor.setSpeed(0);
 
-                        uint8_t magnetRead = magE.readMagnet();
-                        printf("Magnet Status: %d\n", magnetRead);
+                        //uint8_t magnetRead = magE.readMagnet();
+                        //printf("Magnet Status: %d\n", magnetRead);
                         vTaskDelay(pdMS_TO_TICKS(500));
                         break;
                     }
@@ -343,7 +343,7 @@ extern "C" void app_main()
                         ref[2] = set_ref4;
                         PIDmotors(ref[2], Elbow, control[2], error[2], angle_DC[0], speed_DC[0]);
                         Elbow_Motor.setSpeed(control[2]);
-                        printf("ref: %.2f | angle: %.2f | control: %.2f | error: %.2f\n", ref[2], angle_DC[0], control[2], error[2]);
+                        //printf("ref: %.2f | angle: %.2f | control: %.2f | error: %.2f\n", ref[2], angle_DC[0], control[2], error[2]);
                         // printf("%.2f,%.2f,%d\n", angle_DC[0], speed_DC[0], current);
                         // Elbow_Motor.setSpeed(ref[2]);
                         // printf("%.2f,%.2f,%d\n",quadE[0].getAngle(),quadE[0].getSpeed(),current);
@@ -367,7 +367,7 @@ extern "C" void app_main()
                     }
                     case Gripper:
                     {
-                        printf("Activating gripper\n");
+                        //printf("Activating gripper\n");
                         Base_Motor.setSpeed(0);
                         Shoulder_Motor.setSpeed(0);
                         // Elbow_Motor.setSpeed(0);
@@ -387,19 +387,25 @@ extern "C" void app_main()
                 {
                     if (set_ref4 == 1.0f)
                     {
-                        printf("Executing Pick and Place 1\n");
+                        //printf("Executing Pick and Place 1\n");
                         if (!Pick_done)
                         {
                             Pick_done = setPick(set_ref1, set_ref2, set_ref3);
 
                             if (Pick_done)
-                                printf("Pick1 successful\n");
+                            {
+
+                            }
+                                //printf("Pick1 successful\n");
                         }
                         else if (!Place_done)
                         {
                             Place_done = setPlace(Place1);
 
                             if (Place_done)
+                            {
+
+                            }
                                 printf("Place1 successful\n");
                         }
                     }
@@ -411,14 +417,19 @@ extern "C" void app_main()
                             Pick_done = setPick(set_ref1, set_ref2, set_ref3);
 
                             if (Pick_done)
-                                printf("Pick2 successful\n");
+                            {
+
+                            }    //printf("Pick2 successful\n");
                         }
                         else if (!Place_done)
                         {
                             Place_done = setPlace(Place2);
 
                             if (Place_done)
-                                printf("Place2 successful\n");
+                            {
+
+                            }
+                                //printf("Place2 successful\n");
                         }
                     }
                     else if (set_ref4 == 3.0f)
@@ -429,14 +440,19 @@ extern "C" void app_main()
                             Pick_done = setPick(set_ref1, set_ref2, set_ref3);
 
                             if (Pick_done)
-                                printf("Pick3 successful\n");
+                            {
+                            }
+                            //printf("Pick3 successful\n");
                         }
                         else if (!Place_done)
                         {
                             Place_done = setPlace(Place3);
 
                             if (Place_done)
-                                printf("Place3 successful\n");
+                            {
+
+                            }
+                                //printf("Place3 successful\n");
                         }
                     }
                     else if (set_ref4 == 4.0f)
@@ -447,19 +463,25 @@ extern "C" void app_main()
                             Pick_done = setPick(set_ref1, set_ref2, set_ref3);
 
                             if (Pick_done)
-                                printf("Pick4 successful\n");
+                            {
+
+                            }
+                                //printf("Pick4 successful\n");
                         }
                         else if (!Place_done)
                         {
                             Place_done = setPlace(Place4);
 
                             if (Place_done)
-                                printf("Place4 successful\n");
+                                
+                            {
+                            }
+                            //printf("Place4 successful\n");
                         }
                     }
                     else
                     {
-                        printf("Invalid ID\n");
+                        //printf("Invalid ID\n");
                     }
                     break;
                 }
@@ -467,13 +489,13 @@ extern "C" void app_main()
                 case Home:
                 {
                     home_reached = MoveHome(-fabs(set_ref4));
-                    printf("Moving to home, freq: %.2f, reached: %d\n", set_ref4, home_reached);
+                    //printf("Moving to home, freq: %.2f, reached: %d\n", set_ref4, home_reached);
                     ref[1] = 0.0f;
                     PIDmotors(ref[1], Shoulder, control[1], error[1], angle_S[1], speed_S[1]);
                     // Shoulder_Motor.set(control[1], error[1]);
                     if (home_reached)
                     {
-                        printf("Home position reached\n");
+                        //printf("Home position reached\n");
                         Base_Motor.setSpeed(0);
                         // if (error[1] < 2.0f)
                         //{
@@ -497,8 +519,8 @@ extern "C" void app_main()
             }
             // getFK(lengths, height, magE.getTotalAngle(), quadE[0].getAngle(), quadE[1].getAngle(), T_final, euler);
 
-            // send_message = sprintf(message, "%d,%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n", Pick_done, Place_done, angle_S[1], angle_DC[0], angle_DC[1],euler[0],euler[1],deg2cm(angle_S[0], 8.0f));
-            // uart.write(message, send_message);
+            send_message = sprintf(message, "%d,%d,%.2f,%.2f,%.2f,%.2f\n", Pick_done, Place_done, angle_S[0],angle_S[1], angle_DC[0], angle_DC[1]);
+            uart.write(message, send_message);
             /*int len = uart.available();
             if (len)
             {
@@ -531,11 +553,11 @@ extern "C" void app_main()
                 robot_state = (RobotState)robot_tmp;
                 motor_case = (MotorTypes)motor_tmp;
                 uart_index = 0;
-                printf("sscanf parsed %d fields\n", n);
-                printf("recibido: %s\n", buffer_in);
+                //printf("sscanf parsed %d fields\n", n);
+                //printf("recibido: %s\n", buffer_in);
                 if (set_ref4 != last_ref4)
                 {
-                    printf("New command %.1f\n", set_ref4);
+                    //printf("New command %.1f\n", set_ref4);
 
                     Pick_done = false;
                     Place_done = false;

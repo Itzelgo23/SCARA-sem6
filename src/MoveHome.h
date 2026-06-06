@@ -12,7 +12,7 @@ bool MoveHome(float home_freq)
         //pid[1].reset();
         ref[1] = 0.0;
         is_home = true;
-        printf("Home position detected. Pressed: %d\n", pressed);
+        //printf("Home position detected. Pressed: %d\n", pressed);
     }
     else
     {
